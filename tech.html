@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Nghệ 9 | Lắp Mạch Điện Cầu Thang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Signika', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+        }
+        .nav-item:hover {
+            color: #ffce00;
+        }
+        
+        /* CSS cho Vòng Quay & Quiz */
+        .wheel-container { position: relative; width: 400px; height: 400px; margin: 30px auto; border-radius: 50%; border: 8px solid #2196f3; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform cubic-bezier(0.25, 0.1, 0.25, 1); }
+        .pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 45px solid #ef4444; z-index: 10; drop-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        
+        .option { padding: 15px; background: #f3f4f6; border-radius: 8px; cursor: pointer; border: 2px solid transparent; font-weight: 600; transition: 0.2s; text-align: center; }
+        .option:hover { background: #e5e7eb; }
+        .option.correct { background-color: #ff69b4 !important; color: white; border-color: #d8438f; } /* Màu hồng */
+        .option.wrong { background-color: #ef4444 !important; color: white; border-color: #b91c1c; } /* Màu đỏ */
+        .option.disabled { pointer-events: none; }
+        
+        #result-modal, #quiz-section { display: none; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body onload="initGame()">
+
+    <div id="realTimeClock" class="fixed top-0 left-0 z-[60] bg-blue-900 text-yellow-300 px-4 py-1 rounded-br-xl font-bold text-sm shadow-md border-b border-r border-blue-700 opacity-90">
+        Đang tải thời gian...
+    </div>
+
+    <header class="sticky top-0 z-50 bg-[#2196f3] text-white shadow-lg pt-6 md:pt-0">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="bg-yellow-400 p-2 rounded-lg text-blue-900 font-bold text-xl">CN9</div>
+                <span class="font-bold text-lg hidden md:block uppercase">Thực Hành Điện</span>
+            </div>
+            <nav class="hidden md:flex space-x-6 font-semibold">
+                <a href="#ly-thuyet" class="nav-item">Lý Thuyết</a>
+                <a href="#so-do" class="nav-item">Sơ Đồ</a>
+                <a href="#quy-trinh" class="nav-item">Quy Trình</a>
+                <a href="#tro-choi" class="nav-item text-yellow-300 animate-pulse">Trò Chơi</a>
+            </nav>
+            <a href="#tro-choi" class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-6 py-2 rounded-full font-bold shadow-md transition">
+                CHƠI NGAY
+            </a>
+        </div>
+    </header>
+
+    <section class="hero-gradient text-white py-16 px-4">
+        <div class="container mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-md">
+                CHỦ ĐỀ 6: LẮP MẠCH ĐIỆN CẦU THANG
+            </h1>
+            <p class="text-xl opacity-90 mb-8">Thực hành lắp đặt mạng điện trong nhà - Công nghệ 9 (Chân trời sáng tạo)</p>
+            <div class="flex justify-center space-x-4">
+                <img src="https://img.icons8.com/fluency/96/light-bulb.png" class="w-16 h-16 animate-pulse" alt="Light">
+                <img src="https://img.icons8.com/fluency/96/electricity.png" class="w-16 h-16" alt="Power">
+            </div>
+        </div>
+    </section>
+
+    <main class="container mx-auto px-4 py-12">
+        
+        <div id="ly-thuyet" class="mb-16">
+            <h2 class="text-3xl font-bold text-blue-800 border-l-8 border-yellow-400 pl-4 mb-8 uppercase">1. Chuẩn bị túi đồ nghề</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-blue-400">
+                    <img src="https://img.icons8.com/fluency/48/pliers.png" class="mx-auto mb-4">
+                    <p class="font-bold">Kìm điện</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-yellow-400">
+                    <img src="https://img.icons8.com/fluency/48/screwdriver.png" class="mx-auto mb-4">
+                    <p class="font-bold">Tua vít</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-green-400">
+                    <img src="https://img.icons8.com/fluency/48/toggle-switch.png" class="mx-auto mb-4">
+                    <p class="font-bold">2 C.tắc 3 cực</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-red-400">
+                    <img src="https://img.icons8.com/fluency/48/light-on.png" class="mx-auto mb-4">
+                    <p class="font-bold">Đèn & Đuôi</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="so-do" class="bg-blue-50 rounded-3xl p-8 mb-16 shadow-inner border-2 border-dashed border-blue-200">
+            <div class="flex flex-col md:flex-row items-center gap-10">
+                <div class="md:w-1/2">
+                    <h2 class="text-3xl font-bold text-blue-800 mb-6">Sơ đồ nguyên lý</h2>
+                    <div class="bg-white p-4 rounded-xl shadow-lg">
+                        <div class="aspect-video bg-gray-100 rounded-lg flex items-center justify-center border-2 border-blue-100 overflow-hidden">
+                            [Image of a 3-way switch circuit diagram for staircase lighting]
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 text-lg">
+                    <h3 class="font-bold text-yellow-600 mb-4">Cách thức vận hành:</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center justify-center mr-3 mt-1 text-sm">1</span>
+                            <span>Cho phép bật/tắt đèn từ hai vị trí khác nhau (ví dụ: đầu và cuối cầu thang).</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center justify-center mr-3 mt-1 text-sm">2</span>
+                            <span>Sử dụng <b>công tắc 3 cực</b> để chuyển đổi dòng điện giữa hai dây nối song song.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="quy-trinh" class="mb-16">
+            <h2 class="text-3xl font-bold text-blue-800 border-l-8 border-yellow-400 pl-4 mb-8 uppercase text-center">Quy trình thực hiện</h2>
+            <div class="max-w-4xl mx-auto space-y-4">
+                <div class="flex items-center bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 card-hover">
+                    <span class="text-4xl font-bold text-blue-100 mr-6">01</span>
+                    <div>
+                        <h4 class="font-bold text-xl">Vạch dấu</h4>
+                        <p class="text-gray-600">Xác định vị trí các thiết bị trên bảng điện và đường đi dây.</p>
+                    </div>
+                </div>
+                <div class="flex items-center bg-white p-6 rounded-2xl shadow-sm border-l-4 border-yellow-500 card-hover">
+                    <span class="text-4xl font-bold text-yellow-100 mr-6">02</span>
+                    <div>
+                        <h4 class="font-bold text-xl">Khoan lỗ</h4>
+                        <p class="text-gray-600">Khoan lỗ bắt vít và lỗ luồn dây dẫn qua bảng điện.</p>
+                    </div>
+                </div>
+                <div class="flex items-center bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500 card-hover">
+                    <span class="text-4xl font-bold text-green-100 mr-6">03</span>
+                    <div>
+                        <h4 class="font-bold text-xl">Lắp thiết bị</h4>
+                        <p class="text-gray-400 text-sm italic">Sắp xếp cầu chì, công tắc chắc chắn vào vị trí.</p>
+                    </div>
+                </div>
+                <div class="flex items-center bg-white p-6 rounded-2xl shadow-sm border-l-4 border-red-500 card-hover">
+                    <span class="text-4xl font-bold text-red-100 mr-6">04</span>
+                    <div>
+                        <h4 class="font-bold text-xl uppercase text-red-600">Nối dây mạch điện</h4>
+                        <p class="text-gray-600 font-semibold italic">Bước quan trọng nhất: Kết nối các thiết bị theo đúng sơ đồ lắp đặt.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tro-choi" class="bg-white rounded-3xl p-8 shadow-xl border-t-8 border-yellow-400">
+            <h2 class="text-3xl font-bold text-center text-blue-800 mb-2 uppercase">Vòng Quay Gọi Tên</h2>
+            <p class="text-center text-gray-500 mb-8">Ai sẽ là người may mắn trả lời câu hỏi hôm nay?</p>
+            
+            <div class="text-center relative">
+                <div class="wheel-container">
+                    <div class="pointer"></div>
+                    <canvas id="wheelCanvas" class="wheel" width="400" height="400"></canvas>
+                </div>
+                
+                <button id="spinBtn" onclick="spinWheel()" class="mt-6 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg transform transition hover:scale-105">
+                    🎲 XOAY VÒNG QUAY
+                </button>
+
+                <div id="result-modal" class="mt-8 p-6 bg-yellow-50 border-2 border-yellow-200 rounded-2xl inline-block">
+                    <h3 class="text-2xl text-yellow-700 mb-4">🎉 Xin chúc mừng bạn: <br><span id="winnerName" class="text-4xl font-extrabold text-red-500 block mt-2"></span></h3>
+                    <button onclick="goToQuiz()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-8 rounded-full text-lg shadow-md transition">
+                        Bắt Đầu Phần Thi Trắc Nghiệm
+                    </button>
+                </div>
+            </div>
+
+            <div id="quiz-section" class="mt-12 pt-8 border-t-2 border-dashed border-gray-300">
+                <h3 class="text-2xl font-bold text-center text-blue-800 mb-2">Phần thi của: <span id="quizPlayerName" class="text-pink-500"></span></h3>
+                <p class="text-center text-gray-500 italic mb-8">Gồm 3 câu hỏi ngẫu nhiên (2 Dễ - 1 Khó). Chọn đáp án đúng nhất!</p>
+                <div id="quizContainer" class="space-y-6 max-w-4xl mx-auto"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-[#1a1a1a] text-white py-12 mt-20">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center opacity-80">
+            <div class="mb-6 md:mb-0">
+                <div class="text-2xl font-bold text-yellow-400 mb-2">CN9 - THỰC HÀNH</div>
+                <p class="text-sm">Trang web hỗ trợ học tập môn Công nghệ 9</p>
+                <p class="text-xs mt-4">© 2026 Bài giảng điện tử - Tác giả: Bún Đậu</p>
+            </div>
+            <div class="flex space-x-4">
+                <div class="bg-gray-700 h-10 w-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-600 transition">FB</div>
+                <div class="bg-gray-700 h-10 w-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 transition">YT</div>
+                <div class="bg-gray-700 h-10 w-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-black transition">TK</div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. ĐỒNG HỒ THỜI GIAN THỰC ---
+        function updateClock() {
+            const now = new Date();
+            const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+            const dayName = days[now.getDay()];
+            const date = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            document.getElementById('realTimeClock').innerText = `${dayName}, ${date}/${month}/${year} - ${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+
+        // --- 2. DATA CÂU HỎI ---
+        const easyQuestions = [
+            { q: "Thiết bị nào có 3 chốt nối dây trong bài học này?", opts: ["A. Cầu chì", "B. Công tắc 2 cực", "C. Công tắc 3 cực", "D. Ổ cắm"], ans: 2 },
+            { q: "Công tắc 3 cực dùng trong mạch đèn cầu thang gồm có:", opts: ["A. 2 cực tĩnh, 1 cực động", "B. 1 cực tĩnh, 2 cực động", "C. 3 cực tĩnh", "D. 3 cực động"], ans: 0 },
+            { q: "Mục đích chính của mạch điện đèn cầu thang là:", opts: ["A. Tiết kiệm điện", "B. Điều khiển 1 đèn ở 2 nơi", "C. Điều khiển 2 đèn ở 1 nơi", "D. Làm đèn sáng hơn"], ans: 1 },
+            { q: "Trong sơ đồ, cầu chì được lắp vào loại dây nào?", opts: ["A. Dây trung hòa", "B. Dây pha", "C. Dây nối đất", "D. Dây cặp"], ans: 1 },
+            { q: "Cực chung của công tắc 3 cực thứ nhất nối với:", opts: ["A. Đèn", "B. Cầu chì", "C. Dây trung hòa", "D. Cực tĩnh công tắc 2"], ans: 1 },
+            { q: "Hai cực tĩnh của công tắc 3 cực thứ nhất nối với:", opts: ["A. Hai cực tĩnh của công tắc 2", "B. Cực chung của công tắc 2", "C. Nguồn điện", "D. Bóng đèn"], ans: 0 },
+            { q: "Cực chung của công tắc 3 cực thứ hai nối với:", opts: ["A. Cầu chì", "B. Dây pha", "C. Một đầu bóng đèn", "D. Dây trung hòa"], ans: 2 },
+            { q: "Đầu còn lại của bóng đèn (không nối với công tắc) sẽ nối với:", opts: ["A. Dây pha", "B. Dây trung hòa", "C. Cầu chì", "D. Vỏ bảng điện"], ans: 1 },
+            { q: "Ký hiệu dây pha trong sơ đồ điện là:", opts: ["A. N", "B. A (hoặc L)", "C. G", "D. PE"], ans: 1 },
+            { q: "Ký hiệu dây trung hòa trong sơ đồ điện là:", opts: ["A. L", "B. N", "C. P", "D. F"], ans: 1 },
+            { q: "Bước đầu tiên trong quy trình lắp đặt là:", opts: ["A. Nối dây mạch điện", "B. Vạch dấu", "C. Lắp thiết bị vào bảng điện", "D. Kiểm tra"], ans: 1 },
+            { q: "Bước cuối cùng trong quy trình lắp đặt là:", opts: ["A. Vạch dấu", "B. Khoan lỗ", "C. Kiểm tra", "D. Nối dây"], ans: 2 }
+        ];
+
+        const hardQuestions = [
+            { q: "Nếu ta thay công tắc 3 cực bằng công tắc 2 cực, mạch có điều khiển được đèn ở 2 nơi không?", opts: ["A. Có", "B. Không", "C. Chỉ bật được, không tắt được", "D. Tùy vào loại dây"], ans: 1 },
+            { q: "Tại sao dây pha phải đi qua cầu chì rồi mới đến công tắc?", opts: ["A. Để đèn sáng hơn", "B. Để bảo vệ toàn bộ mạch khi có sự cố", "C. Để tiết kiệm dây", "D. Để dễ sửa bóng đèn"], ans: 1 },
+            { q: "Nếu dây pha nối trực tiếp vào đèn, còn công tắc 3 cực nối ở dây trung hòa, hiện tượng gì xảy ra khi tắt đèn?", opts: ["A. Đèn vẫn sáng", "B. Đèn tắt nhưng đui đèn vẫn có điện, gây nguy hiểm", "C. Đèn cháy ngay lập tức", "D. Cầu chì nổ"], ans: 1 },
+            { q: "Sơ đồ lắp đặt khác sơ đồ nguyên lý ở điểm nào?", opts: ["A. Chỉ dùng để trang trí", "B. Thể hiện vị trí thực tế và cách đi dây", "C. Không có dây trung hòa", "D. Thể hiện mối liên hệ điện"], ans: 1 },
+            { q: "Một mạch cầu thang đang hoạt động, bỗng nhiên chỉ bật được ở tầng 1 mà không tắt được ở tầng 2. Nguyên nhân có thể do:", opts: ["A. Hỏng 1 cực tĩnh của công tắc tầng 2", "B. Cháy bóng đèn", "C. Đứt dây trung hòa", "D. Nổ cầu chì"], ans: 0 },
+            { q: "Nếu nối chéo 2 cực tĩnh của công tắc 1 với 2 cực tĩnh của công tắc 2, mạch có hoạt động đúng không?", opts: ["A. Không hoạt động", "B. Vẫn hoạt động đúng nguyên lý", "C. Gây chập mạch", "D. Đèn sáng yếu"], ans: 1 },
+            { q: "Khi kiểm tra mạch điện mà không có nguồn, thiết bị nào hỗ trợ kiểm tra thông mạch tốt nhất?", opts: ["A. Bút thử điện", "B. Pin và đèn LED (hoặc đồng hồ đo Ohm)", "C. Thước dây", "D. Tua vít"], ans: 1 },
+            { q: "Tại sao trong mạch đèn cầu thang, người ta ít dùng cầu dao đảo chiều thay cho công tắc 3 cực?", opts: ["A. Cầu dao đắt hơn", "B. Cầu dao cồng kềnh và không thẩm mỹ", "C. Cầu dao không dẫn điện tốt", "D. Cầu dao dễ cháy"], ans: 1 }
+        ];
+
+        // --- 3. DATA VÒNG QUAY ---
+        const names = [
+            "Lý Gia An", "Nguyễn Ngọc Trầm Anh", "Triệu Trần Phương Anh", "Dương Anh Bảo", 
+            "Võ Quốc Cường", "Dương Ngọc Trân Châu", "Huỳnh Quốc Đại", "Vũ Tiến Đạt", 
+            "Nguyễn Trần Nghi Hân", "Đặng Minh Hoàng", "Trần Gia Huy", "Dương Minh Kim", 
+            "Lý Quốc Khánh", "Huỳnh Phúc Lộc", "Tô Gia Minh", "Ngô Nguyễn Phương Nghi", 
+            "Nguyễn Trần Khánh Ngọc", "Võ Đỗ Phương Nguyên", "Đặng Khôi Nguyên", "Nguyễn Trọng Nhân", 
+            "Phạm Quỳnh Như", "Nguyễn Hồng Quang", "Nguyễn Gia Quy", "Võ Dương Ngọc Quý", 
+            "Trần Nguyễn Tú Quỳnh", "Trương Nhã Quỳnh", "Lý Hưng Thịnh", "Nguyễn Thị Kiều Trang", 
+            "Võ Lê Minh Triết", "Phạm Phú Trọng", "Lê Nhã Uyên", "Tôn Huỳnh Thảo Vy"
+        ];
+        
+        let currentRotation = 0;
+        let isSpinning = false;
+        // Bảng màu lặp lại cho các ô
+        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#ff9800', '#ff5722'];
+
+        function initGame() {
+            updateClock();
+            drawWheel();
+        }
+
+        function drawWheel() {
+            let canvas = document.getElementById('wheelCanvas');
+            let ctx = canvas.getContext('2d');
+            let centerX = canvas.width / 2;
+            let centerY = canvas.height / 2;
+            let radius = canvas.width / 2;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let sliceAngle = (2 * Math.PI) / names.length;
+            
+            for (let i = 0; i < names.length; i++) {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, i * sliceAngle, (i + 1) * sliceAngle);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.stroke();
+                
+                // Vẽ tên (Tinh chỉnh font size vì có 32 người)
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(i * sliceAngle + sliceAngle / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 11px Arial"; // Cỡ chữ nhỏ để fit 32 cái tên
+                // Cắt tên bớt nếu quá dài để không bị lẹm vào tâm
+                let displayName = names[i];
+                if(displayName.length > 20) displayName = displayName.substring(0, 18) + '...';
+                
+                ctx.fillText(displayName, radius - 15, 4);
+                ctx.restore();
+            }
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            
+            // Ẩn kết quả & quiz cũ
+            document.getElementById('result-modal').style.display = 'none';
+            document.getElementById('quiz-section').style.display = 'none';
+            
+            let canvas = document.getElementById('wheelCanvas');
+            let spinFast = 360 * 100; // Quay 100 vòng
+            currentRotation += spinFast;
+            
+            canvas.style.transition = 'transform 10s linear';
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            // Đợi 10s xong cho dừng 5s
+            setTimeout(() => {
+                let randomSegment = Math.floor(Math.random() * names.length);
+                let segmentDegree = 360 / names.length;
+                let targetDegree = (270 - (randomSegment * segmentDegree) - (segmentDegree / 2) + 360) % 360;
+                
+                let finalSpin = (360 * 3) + targetDegree; // Quay nhẹ 3 vòng
+                let extraOffset = 360 - (currentRotation % 360);
+                
+                currentRotation += extraOffset + finalSpin;
+
+                canvas.style.transition = 'transform 3s cubic-bezier(0.1, 0.7, 0.1, 1)';
+                canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+                // Hiện kết quả
+                setTimeout(() => {
+                    isSpinning = false;
+                    document.getElementById('winnerName').innerText = names[randomSegment];
+                    document.getElementById('result-modal').style.display = 'block';
+                    
+                    // Cuộn màn hình nhẹ xuống chỗ kết quả
+                    document.getElementById('result-modal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 3000);
+
+            }, 15000);
+        }
+
+        // --- 4. LOGIC TRẢ LỜI CÂU HỎI ---
+        function getRandom(arr, n) {
+            let result = new Array(n), len = arr.length, taken = new Array(len);
+            while (n--) {
+                let x = Math.floor(Math.random() * len);
+                result[n] = arr[x in taken ? taken[x] : x];
+                taken[x] = --len in taken ? taken[len] : len;
+            }
+            return result;
+        }
+
+        function goToQuiz() {
+            let winner = document.getElementById('winnerName').innerText;
+            document.getElementById('quizPlayerName').innerText = winner;
+            document.getElementById('quiz-section').style.display = 'block';
+            
+            generateQuiz();
+            // Cuộn xuống phần câu hỏi
+            setTimeout(() => {
+                document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+
+        function generateQuiz() {
+            let selectedEasy = getRandom(easyQuestions, 2);
+            let selectedHard = getRandom(hardQuestions, 1);
+            let finalQuestions = [...selectedEasy, ...selectedHard]; 
+            
+            let container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+
+            finalQuestions.forEach((qObj, index) => {
+                let isHard = index === 2;
+                let qDiv = document.createElement('div');
+                qDiv.className = 'bg-white p-6 rounded-2xl shadow-md border border-gray-100';
+                
+                let qTitle = document.createElement('div');
+                qTitle.className = 'text-lg font-bold text-blue-900 mb-4';
+                qTitle.innerHTML = `<span class="${isHard ? 'text-red-500' : 'text-green-500'}">Câu ${index + 1} ${isHard ? '(Khó)' : '(Dễ)'}:</span> ${qObj.q}`;
+                qDiv.appendChild(qTitle);
+
+                let optsDiv = document.createElement('div');
+                optsDiv.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+
+                qObj.opts.forEach((optText, optIndex) => {
+                    let btn = document.createElement('div');
+                    btn.className = 'option';
+                    btn.innerText = optText;
+                    
+                    btn.onclick = function() {
+                        let allBtns = optsDiv.querySelectorAll('.option');
+                        allBtns.forEach(b => b.classList.add('disabled'));
+
+                        if (optIndex === qObj.ans) {
+                            btn.classList.add('correct'); 
+                        } else {
+                            btn.classList.add('wrong'); 
+                            allBtns[qObj.ans].classList.add('correct');
+                        }
+                    };
+                    optsDiv.appendChild(btn);
+                });
+                qDiv.appendChild(optsDiv);
+                container.appendChild(qDiv);
+});
+        }
+    </script>
+</body>
+</html>
