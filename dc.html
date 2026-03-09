@@ -1,266 +1,454 @@
-<!DOCTYPE html>
-<html lang="vi" class="light">
-<head>
+<html lang="vi"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Công Nghệ 9 | Lắp Mạch Điện Cầu Thang</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Signika', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Signika:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&amp;display=swap" rel="stylesheet">
     <style>
+        :root {
+            --pt-blue: #1eb8ff;
+            --pt-light-blue: #7cd9ff;
+            --pt-dark-blue: #0060a8;
+            --pt-yellow: #ffce00;
+            --pt-orange: #ff8c00;
+            --pt-border: #8bd3fe;
+        }
+
+        /* --- NỀN ĐỘNG (ANIMATED GRADIENT) CHUYỂN MÀU MỚI MẺ --- */
         body {
-            transition: background-color 0.3s ease, color 0.3s ease;
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(-45deg, #aae4ff, #8e94e9, #7cd9ff, #bce8ff);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
         }
-        .hero-gradient {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        .dark .hero-gradient {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+
+        /* --- HIỆU ỨNG ÁNH SÁNG XẸT NGANG (LIGHT STREAKS) --- */
+        .light-streaks-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; /* Rất quan trọng: Không chặn click chuột của web */
+            z-index: 9999;
+            overflow: hidden;
         }
-        .card-hover:hover {
-            transform: translateY(-5px);
-            transition: all 0.3s ease;
+
+        .light-streak {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+            transform: skewX(-30deg);
         }
-        .nav-item:hover {
-            color: #ffce00;
+
+        /* Vệt sáng bóng bẩy chéo 1 */
+        .streak-1 {
+            top: 0; left: -100%; width: 150px; height: 100%;
+            animation: lightSweep 5s infinite linear;
+            opacity: 0.7;
         }
+
+        /* Vệt sáng bóng bẩy chéo 2 (nhỏ hơn, theo sau) */
+        .streak-2 {
+            top: 0; left: -100%; width: 50px; height: 100%;
+            animation: lightSweep 5s infinite 0.3s linear;
+            opacity: 0.5;
+        }
+
+        /* Tia laser ngang (mô phỏng dòng điện xẹt) */
+        .streak-3 {
+            top: 30%; left: -100%; width: 400px; height: 8px;
+            transform: skewX(0);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 1), transparent);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 10px rgba(139, 211, 254, 0.8);
+            animation: laserSweep 4s infinite 2s ease-in-out;
+        }
+
+        @keyframes lightSweep {
+            0% { left: -50%; }
+            100% { left: 150%; }
+        }
+
+        @keyframes laserSweep {
+            0% { left: -100%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { left: 150%; opacity: 0; }
+        }
+
+        /* --- UI CHUẨN PLAY TOGETHER --- */
+        .pt-header { background-color: var(--pt-blue); }
+        .pt-nav-link { color: white; font-weight: 800; text-transform: uppercase; font-size: 14px; transition: 0.2s; padding: 5px 10px; border-radius: 20px; }
+        .pt-nav-link:hover { background-color: rgba(255,255,255,0.2); }
+        .pt-btn-orange { background-color: var(--pt-orange); color: white; border-radius: 30px; font-weight: 800; padding: 6px 20px; box-shadow: 0 4px 0 #d97700; transition: transform 0.1s; }
+        .pt-btn-orange:active { transform: translateY(4px); box-shadow: 0 0 0 #d97700; }
+
+        .clouds { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.4" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,186.7C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom; background-size: cover; height: 150px; width: 100%; position: absolute; bottom: 0; left: 0; z-index: 0; pointer-events: none;}
+
+        .pt-container { background: white; border: 3px dashed var(--pt-border); border-radius: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; z-index: 10; margin-top: -50px; padding: 40px; }
+        .pt-title { color: var(--pt-blue); font-weight: 900; font-size: 32px; text-transform: uppercase; text-align: center; margin-bottom: 25px; }
+
+        .pt-tabs-wrapper { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .pt-tab-btn { padding: 10px 25px; border: 2.5px solid #8e94e9; border-radius: 30px; background: white; color: #6b72e1; font-weight: 800; font-size: 16px; text-transform: uppercase; cursor: pointer; transition: 0.2s; position: relative; }
+        .pt-tab-btn:hover { background: #f0f1ff; }
+        .pt-tab-btn.active { background-color: var(--pt-yellow); border-color: var(--pt-yellow); color: white; box-shadow: 0 4px 0 #d4a000; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .pt-tab-btn.active::after { content: '👑'; position: absolute; top: -18px; right: -10px; font-size: 24px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); transform: rotate(15deg); }
         
-        /* CSS cho Vòng Quay & Quiz */
-        .wheel-container { position: relative; width: 400px; height: 400px; margin: 30px auto; border-radius: 50%; border: 8px solid #2196f3; box-shadow: 0 10px 25px rgba(0,0,0,0.15); overflow: hidden; }
-        .dark .wheel-container { border-color: #3b82f6; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .floating-qr { position: fixed; right: 0; top: 150px; background: var(--pt-blue); border: 3px solid white; border-right: none; border-radius: 20px 0 0 20px; padding: 10px; width: 90px; text-align: center; box-shadow: -5px 5px 15px rgba(0,0,0,0.2); z-index: 100; }
+        .floating-qr img { width: 100%; border-radius: 10px; border: 2px solid red; margin-bottom: 10px; }
+        .qr-btn { background: #182026; color: white; font-size: 10px; font-weight: bold; border-radius: 15px; padding: 5px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; border: 1px solid #333;}
+        .qr-btn:hover { background: #333; }
+        .qr-social { display: flex; justify-content: center; gap: 5px; margin-top: 5px; }
+        .qr-social div { background: #182026; width: 20px; height: 20px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
+
+        .pt-news-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 2px dashed #eee; transition: 0.2s; }
+        .pt-news-item:hover { background: #f9f9f9; border-radius: 10px; padding: 15px; }
+        .pt-news-number { font-size: 28px; font-weight: 900; color: #ccc; margin-right: 20px; font-style: italic; }
+        .pt-news-content { flex: 1; }
+        .pt-news-title { font-weight: 800; color: #444; font-size: 18px; }
+        .pt-news-desc { color: #777; font-size: 14px; margin-top: 5px; }
+        .pt-news-btn { background: var(--pt-blue); color: white; font-weight: 800; font-size: 12px; padding: 6px 15px; border-radius: 20px; }
+
+        .wheel-container { position: relative; width: 350px; height: 350px; margin: 20px auto; border-radius: 50%; border: 8px solid var(--pt-blue); box-shadow: 0 10px 25px rgba(0,184,255,0.3); overflow: hidden; background: white;}
         .wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform cubic-bezier(0.25, 0.1, 0.25, 1); }
-        .pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 45px solid #ef4444; z-index: 10; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3)); }
+        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 35px solid #ff4757; z-index: 10; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.3)); }
         
-        .option { padding: 15px; background: #f3f4f6; border-radius: 8px; cursor: pointer; border: 2px solid transparent; font-weight: 600; transition: 0.2s; text-align: center; color: #1f2937; }
-        .dark .option { background: #374151; color: #f3f4f6; }
-        .option:hover { background: #e5e7eb; }
-        .dark .option:hover { background: #4b5563; }
-        .option.correct { background-color: #ff69b4 !important; color: white !important; border-color: #d8438f; }
-        .option.wrong { background-color: #ef4444 !important; color: white !important; border-color: #b91c1c; }
+        .option { padding: 15px; background: #f0f8ff; border-radius: 15px; cursor: pointer; border: 3px solid #d0ebff; font-weight: 800; transition: 0.2s; text-align: center; color: #333; }
+        .option:hover { background: #d0ebff; transform: scale(1.02); }
+        .option.correct { background-color: var(--pt-yellow) !important; color: #d35400 !important; border-color: #f39c12; } 
+        .option.wrong { background-color: #ff4757 !important; color: white !important; border-color: #c0392b; } 
         .option.disabled { pointer-events: none; }
-        
-        #result-modal, #quiz-section { display: none; animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Nút toggle dark mode */
-        .toggle-checkbox:checked { right: 0; border-color: #68D391; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
     </style>
-</head>
-<body class="bg-[#f0f9ff] text-gray-800 dark:bg-gray-900 dark:text-gray-100" onload="initGame()">
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.fixed{position:fixed}.relative{position:relative}.sticky{position:sticky}.left-0{left:0px}.top-0{top:0px}.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}.z-\[60\]{z-index:60}.mx-auto{margin-left:auto;margin-right:auto}.my-2{margin-top:0.5rem;margin-bottom:0.5rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-12{height:3rem}.h-3{height:0.75rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-\[60px\]{height:60px}.h-auto{height:auto}.w-12{width:3rem}.w-3{width:0.75rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-full{width:100%}.max-w-2xl{max-width:42rem}.max-w-3xl{max-width:48rem}.max-w-6xl{max-width:72rem}.max-w-lg{max-width:32rem}.flex-shrink-0{flex-shrink:0}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.list-disc{list-style-type:disc}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-x-2 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(0.5rem * var(--tw-space-x-reverse));margin-left:calc(0.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-x-6 > :not([hidden]) ~ :not([hidden]){--tw-space-x-reverse:0;margin-right:calc(1.5rem * var(--tw-space-x-reverse));margin-left:calc(1.5rem * calc(1 - var(--tw-space-x-reverse)))}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-bl-lg{border-bottom-left-radius:0.5rem}.rounded-br-lg{border-bottom-right-radius:0.5rem}.rounded-tl-lg{border-top-left-radius:0.5rem}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-b-4{border-bottom-width:4px}.border-r{border-right-width:1px}.border-t-2{border-top-width:2px}.border-t-8{border-top-width:8px}.border-dashed{border-style:dashed}.border-none{border-style:none}.border-\[\#004f8b\]{--tw-border-opacity:1;border-color:rgb(0 79 139 / var(--tw-border-opacity, 1))}.border-\[\#0097e6\]{--tw-border-opacity:1;border-color:rgb(0 151 230 / var(--tw-border-opacity, 1))}.border-\[\#10ac84\]{--tw-border-opacity:1;border-color:rgb(16 172 132 / var(--tw-border-opacity, 1))}.border-\[\#2e86de\]{--tw-border-opacity:1;border-color:rgb(46 134 222 / var(--tw-border-opacity, 1))}.border-\[\#333\]{--tw-border-opacity:1;border-color:rgb(51 51 51 / var(--tw-border-opacity, 1))}.border-\[\#c0392b\]{--tw-border-opacity:1;border-color:rgb(192 57 43 / var(--tw-border-opacity, 1))}.border-\[\#f39c12\]{--tw-border-opacity:1;border-color:rgb(243 156 18 / var(--tw-border-opacity, 1))}.border-\[\#ffeaa7\]{--tw-border-opacity:1;border-color:rgb(255 234 167 / var(--tw-border-opacity, 1))}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254 / var(--tw-border-opacity, 1))}.border-blue-400{--tw-border-opacity:1;border-color:rgb(96 165 250 / var(--tw-border-opacity, 1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-green-400{--tw-border-opacity:1;border-color:rgb(74 222 128 / var(--tw-border-opacity, 1))}.border-orange-400{--tw-border-opacity:1;border-color:rgb(251 146 60 / var(--tw-border-opacity, 1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-yellow-200{--tw-border-opacity:1;border-color:rgb(254 240 138 / var(--tw-border-opacity, 1))}.border-yellow-400{--tw-border-opacity:1;border-color:rgb(250 204 21 / var(--tw-border-opacity, 1))}.bg-\[\#182026\]{--tw-bg-opacity:1;background-color:rgb(24 32 38 / var(--tw-bg-opacity, 1))}.bg-\[\#1dd1a1\]{--tw-bg-opacity:1;background-color:rgb(29 209 161 / var(--tw-bg-opacity, 1))}.bg-\[\#1eb8ff\]{--tw-bg-opacity:1;background-color:rgb(30 184 255 / var(--tw-bg-opacity, 1))}.bg-\[\#54a0ff\]{--tw-bg-opacity:1;background-color:rgb(84 160 255 / var(--tw-bg-opacity, 1))}.bg-\[\#f0f9ff\]{--tw-bg-opacity:1;background-color:rgb(240 249 255 / var(--tw-bg-opacity, 1))}.bg-\[\#fdf5e6\]{--tw-bg-opacity:1;background-color:rgb(253 245 230 / var(--tw-bg-opacity, 1))}.bg-\[\#feca57\]{--tw-bg-opacity:1;background-color:rgb(254 202 87 / var(--tw-bg-opacity, 1))}.bg-\[\#ff6b6b\]{--tw-bg-opacity:1;background-color:rgb(255 107 107 / var(--tw-bg-opacity, 1))}.bg-\[var\(--pt-dark-blue\)\]{background-color:var(--pt-dark-blue)}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-yellow-400{--tw-bg-opacity:1;background-color:rgb(250 204 21 / var(--tw-bg-opacity, 1))}.bg-yellow-50{--tw-bg-opacity:1;background-color:rgb(254 252 232 / var(--tw-bg-opacity, 1))}.bg-yellow-500{--tw-bg-opacity:1;background-color:rgb(234 179 8 / var(--tw-bg-opacity, 1))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-blue-100{--tw-gradient-from:#dbeafe var(--tw-gradient-from-position);--tw-gradient-to:rgb(219 234 254 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-green-100{--tw-gradient-to:#dcfce7 var(--tw-gradient-to-position)}.fill-current{fill:currentColor}.p-1{padding:0.25rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pb-20{padding-bottom:5rem}.pb-24{padding-bottom:6rem}.pb-4{padding-bottom:1rem}.pl-5{padding-left:1.25rem}.pl-6{padding-left:1.5rem}.pt-12{padding-top:3rem}.pt-8{padding-top:2rem}.text-left{text-align:left}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.text-\[\#0060a8\]{--tw-text-opacity:1;color:rgb(0 96 168 / var(--tw-text-opacity, 1))}.text-\[\#00d2ff\]{--tw-text-opacity:1;color:rgb(0 210 255 / var(--tw-text-opacity, 1))}.text-\[\#1dd1a1\]{--tw-text-opacity:1;color:rgb(29 209 161 / var(--tw-text-opacity, 1))}.text-\[\#d35400\]{--tw-text-opacity:1;color:rgb(211 84 0 / var(--tw-text-opacity, 1))}.text-\[\#f39c12\]{--tw-text-opacity:1;color:rgb(243 156 18 / var(--tw-text-opacity, 1))}.text-\[\#ff4757\]{--tw-text-opacity:1;color:rgb(255 71 87 / var(--tw-text-opacity, 1))}.text-\[\#ff8c00\]{--tw-text-opacity:1;color:rgb(255 140 0 / var(--tw-text-opacity, 1))}.text-\[var\(--pt-blue\)\]{color:var(--pt-blue)}.text-\[var\(--pt-orange\)\]{color:var(--pt-orange)}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246 / var(--tw-text-opacity, 1))}.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175 / var(--tw-text-opacity, 1))}.text-blue-900{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-green-400{--tw-text-opacity:1;color:rgb(74 222 128 / var(--tw-text-opacity, 1))}.text-green-500{--tw-text-opacity:1;color:rgb(34 197 94 / var(--tw-text-opacity, 1))}.text-green-800{--tw-text-opacity:1;color:rgb(22 101 52 / var(--tw-text-opacity, 1))}.text-orange-800{--tw-text-opacity:1;color:rgb(154 52 18 / var(--tw-text-opacity, 1))}.text-red-400{--tw-text-opacity:1;color:rgb(248 113 113 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-600{--tw-text-opacity:1;color:rgb(202 138 4 / var(--tw-text-opacity, 1))}.opacity-80{opacity:0.8}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.drop-shadow-xl{--tw-drop-shadow:drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:-translate-y-2:hover{--tw-translate-y:-0.5rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-\[\#00a8ff\]:hover{--tw-bg-opacity:1;background-color:rgb(0 168 255 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:text-\[var\(--pt-dark-blue\)\]:hover{color:var(--pt-dark-blue)}.hover\:text-yellow-300:hover{--tw-text-opacity:1;color:rgb(253 224 71 / var(--tw-text-opacity, 1))}@media (min-width: 768px){.md\:flex{display:flex}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.md\:text-6xl{font-size:3.75rem;line-height:1}}@media (min-width: 1024px){.lg\:block{display:block}}</style></head>
+<body onload="initGame()">
 
-    <div id="realTimeClock" class="fixed top-0 left-0 z-[60] bg-blue-900 text-yellow-300 px-4 py-1 rounded-br-xl font-bold text-sm shadow-md border-b border-r border-blue-700 opacity-90 dark:bg-gray-800 dark:border-gray-600">
-        Đang tải thời gian...
+    <div class="light-streaks-container">
+        <div class="light-streak streak-1"></div>
+        <div class="light-streak streak-2"></div>
+        <div class="light-streak streak-3"></div>
     </div>
 
-    <header class="sticky top-0 z-50 bg-[#2196f3] dark:bg-gray-800 text-white shadow-lg pt-6 md:pt-0 transition-colors duration-300">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+    <div id="realTimeClock" class="fixed top-0 left-0 z-[60] bg-[#182026] text-white px-3 py-1 rounded-br-lg font-bold text-[11px] shadow opacity-80 border-b border-r border-[#333]">Thứ 2, 09/03/2026 - 21:51:05</div>
+
+    <header class="pt-header sticky top-0 z-50 shadow-md">
+        <div class="container mx-auto px-4 h-[60px] flex justify-between items-center">
             <div class="flex items-center space-x-2">
-                <div class="bg-yellow-400 p-2 rounded-lg text-blue-900 font-bold text-xl">CN9</div>
-                <span class="font-bold text-lg hidden md:block uppercase">Thực Hành Điện</span>
+                <svg class="w-6 h-6 text-white cursor-pointer hover:text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
             </div>
             
-            <nav class="hidden md:flex space-x-6 font-semibold items-center">
-                <a href="#ly-thuyet" class="nav-item">Lý Thuyết</a>
-                <a href="#so-do" class="nav-item">Sơ Đồ</a>
-                <a href="#quy-trinh" class="nav-item">Quy Trình</a>
-                <a href="#tro-choi" class="nav-item text-yellow-300 animate-pulse">Trò Chơi</a>
-                
-                <div class="flex items-center ml-4 border-l border-blue-300 dark:border-gray-600 pl-4">
-                    <span class="mr-2 text-sm">Sáng</span>
-                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" name="toggle" id="themeToggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10"/>
-                        <label for="themeToggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer"></label>
-                    </div>
-                    <span class="text-sm text-gray-200">Tối</span>
-                </div>
+            <nav class="hidden md:flex space-x-2 items-center relative z-50">
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-lythuyet')">LÝ THUYẾT</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-sodo')">SƠ ĐỒ</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-quytrinh')">QUY TRÌNH</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-antoan')">AN TOÀN &amp; LỖI</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-ungdung')">ỨNG DỤNG</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-trochoi')">TRÒ CHƠI</a>
             </nav>
 
-            <a href="#tro-choi" class="bg-yellow-400 hover:bg-yellow-300 text-blue-900 px-6 py-2 rounded-full font-bold shadow-md transition">
-                CHƠI NGAY
-            </a>
+            <button class="pt-btn-orange text-sm uppercase relative z-50">Đăng nhập</button>
         </div>
     </header>
 
-    <section class="hero-gradient text-white py-16 px-4 transition-colors duration-300">
-        <div class="container mx-auto text-center">
-            <h1 class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-md">
-                CHỦ ĐỀ 6: LẮP MẠCH ĐIỆN CẦU THANG
+    <section class="relative pt-12 pb-24 px-4 overflow-hidden" style="background-color: transparent;">
+        <div class="container mx-auto text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-black mb-4 text-white drop-shadow-xl" style="-webkit-text-stroke: 2px #0060a8;">
+                LẮP MẠCH ĐIỆN CẦU THANG
             </h1>
-            <p class="text-xl opacity-90 mb-8">Thực hành lắp đặt mạng điện trong nhà - Công nghệ 9 (Chân trời sáng tạo)</p>
-            <div class="flex justify-center space-x-6">
-                <svg class="w-16 h-16 animate-pulse text-yellow-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm2.5 18H9.5v-1h5v1zm-2 2h-1v-1h1v1z"/></svg>
-                <svg class="w-16 h-16 text-yellow-400" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-            </div>
         </div>
+        <div class="clouds"></div>
     </section>
 
-    <main class="container mx-auto px-4 py-12">
-        
-        <div id="ly-thuyet" class="mb-16">
-            <h2 class="text-3xl font-bold text-blue-800 dark:text-blue-300 border-l-8 border-yellow-400 pl-4 mb-8 uppercase">1. Chuẩn bị túi đồ nghề</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-blue-400">
-                    <svg class="w-12 h-12 mx-auto mb-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"></path></svg>
-                    <p class="font-bold">Kìm điện</p>
+    <main class="container mx-auto px-4 pb-20 relative z-10">
+        <div class="pt-container max-w-6xl mx-auto">
+            
+            <h2 class="pt-title">- NỘI DUNG -</h2>
+
+            <div class="pt-tabs-wrapper relative z-20">
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-lythuyet')">Lý Thuyết</button>
+                <button class="pt-tab-btn active" onclick="switchTab(event, 'tab-sodo')">Sơ Đồ</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-quytrinh')">Quy Trình</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-antoan')">An Toàn &amp; Lỗi</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-ungdung')">Ứng Dụng</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-trochoi')">Trò Chơi</button>
+            </div>
+
+            <div id="tab-lythuyet" class="tab-content">
+                <div class="bg-[#f0f9ff] rounded-2xl p-6 border-2 border-blue-200 mb-6">
+                    <h3 class="text-xl font-black text-[#0060a8] mb-2 uppercase">1. Dụng cụ, Vật liệu và Thiết bị</h3>
+                    <p class="text-gray-700 font-semibold mb-4">Để thực hiện bài thực hành này, chúng ta cần chuẩn bị đầy đủ các "vật phẩm" sau:</p>
+                    <ul class="list-disc pl-6 space-y-2 text-gray-700 font-bold mb-6">
+                        <li><span class="text-[#ff4757]">Thiết bị:</span> 1 Cầu chì, 2 Công tắc 3 cực, 1 Bóng đèn sợi đốt (hoặc LED).</li>
+                        <li><span class="text-[#1dd1a1]">Vật liệu:</span> Bảng điện, dây dẫn điện, băng keo cách điện.</li>
+                        <li><span class="text-[#f39c12]">Dụng cụ:</span> Kìm tuốt dây, tua vít, bút thử điện, khoan tay (nếu cần).</li>
+                    </ul>
                 </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-yellow-400">
-                    <svg class="w-12 h-12 mx-auto mb-4 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                    <p class="font-bold">Tua vít</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-green-400">
-                    <svg class="w-12 h-12 mx-auto mb-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    <p class="font-bold">2 C.tắc 3 cực</p>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm text-center card-hover border-b-4 border-red-400">
-                    <svg class="w-12 h-12 mx-auto mb-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                    <p class="font-bold">Đèn & Đuôi</p>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="bg-[#ff6b6b] rounded-2xl p-4 text-center text-white shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#c0392b]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        <h4 class="font-black text-lg">KÌM ĐIỆN</h4>
+                        <p class="text-xs">Dụng cụ cắt, tuốt</p>
+                    </div>
+                    <div class="bg-[#1dd1a1] rounded-2xl p-4 text-center text-white shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#10ac84]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        <h4 class="font-black text-lg">TUA VÍT</h4>
+                        <p class="text-xs">Siết ốc, vặn chốt</p>
+                    </div>
+                    <div class="bg-[#feca57] rounded-2xl p-4 text-center text-[#d35400] shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#f39c12]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-[#d35400]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3" stroke-width="2"></rect><rect x="9" y="8" width="6" height="8" rx="1" fill="currentColor"></rect><circle cx="12" cy="5" r="1.5" fill="currentColor"></circle><circle cx="8" cy="19" r="1.5" fill="currentColor"></circle><circle cx="16" cy="19" r="1.5" fill="currentColor"></circle></svg>
+                        <h4 class="font-black text-lg">2 CT 3 CỰC</h4>
+                        <p class="text-xs">Chuyển mạch</p>
+                    </div>
+                    <div class="bg-[#54a0ff] rounded-2xl p-4 text-center text-white shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#2e86de]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 2v1m-4.24 1.76l-.71-.71M20.95 12h-1M4.05 12h-1M16.24 4.76l.71-.71M12 18V9m0 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M8 15h8v3H8z"></path></svg>
+                        <h4 class="font-black text-lg">ĐÈN &amp; ĐUÔI</h4>
+                        <p class="text-xs">Thiết bị tiêu thụ</p>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="so-do" class="bg-blue-50 dark:bg-gray-800 rounded-3xl p-8 mb-16 shadow-inner border-2 border-dashed border-blue-200 dark:border-gray-600">
-            <div class="flex flex-col md:flex-row items-center gap-10">
-                <div class="md:w-1/2">
-                    <h2 class="text-3xl font-bold text-blue-800 dark:text-blue-300 mb-6">Sơ đồ nguyên lý</h2>
-                    <div class="bg-white dark:bg-gray-700 p-4 rounded-xl shadow-lg">
-                        <div class="bg-gray-100 dark:bg-gray-600 rounded-lg flex items-center justify-center border-2 border-blue-100 dark:border-gray-500 overflow-hidden">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Multiway_switches.svg/800px-Multiway_switches.svg.png" alt="Sơ đồ nguyên lý công tắc 3 cực" class="w-full h-auto rounded">
+            <div id="tab-sodo" class="tab-content active">
+                <div class="bg-[#f0f9ff] rounded-2xl p-6 border-2 border-blue-200">
+                    <div class="text-center mb-6">
+                        <span class="bg-yellow-400 text-blue-900 font-black px-5 py-1 rounded-full text-sm uppercase">2. Sơ đồ Nguyên lý &amp; Lắp đặt</span>
+                    </div>
+                    
+                    <div class="mb-6 font-bold text-gray-700">
+                        <p class="mb-2"><span class="text-[var(--pt-blue)]">Điểm khác biệt lớn nhất</span> của công tắc 3 cực so với công tắc 2 cực là nó có 1 cực chung (tĩnh) và 2 cực động.</p>
+                        <p><strong>Nguyên lý hoạt động:</strong> Mạch điện vận hành dựa trên sự phối hợp giữa hai công tắc:</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-sm">
+                            <li>Khi cả hai công tắc cùng ở vị trí tiếp điểm 1 (hoặc cùng vị trí 2): Mạch kín, đèn sáng.</li>
+                            <li>Khi hai công tắc ở hai vị trí khác nhau (một cái vị trí 1, một cái vị trí 2): Mạch hở, đèn tắt.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden p-4 mb-6 shadow-sm">
+                        <svg viewBox="0 0 700 250" class="w-full h-auto max-w-lg" xmlns="http://www.w3.org/2000/svg">
+                           </svg><img src="https://img.notionusercontent.com/s3/prod-files-secure%2Ffe8aaa7b-9cf6-81aa-b67f-0003cc54743f%2Fedb58e8b-fdc3-4120-9943-477ce269c9f6%2Fimage.png/size/w=2000?exp=1773064618&amp;sig=VPBrMJg6rEmfEM-ssaCqayjuJhI2zm97Lk3uCA34scc&amp;id=31eaaa7b-9cf6-8005-88bd-f7bd85328212&amp;table=block&amp;userId=242d872b-594c-81d7-abe8-00023d83d37e">
+                        
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-inner mt-6">
+                        <h4 class="font-black text-[#ff8c00] mb-3">Phân tích chi tiết Sơ đồ đấu dây:</h4>
+                        <ul class="space-y-3 font-semibold text-gray-700">
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-red-500 text-white flex justify-center items-center flex-shrink-0 shadow">L</div> <strong>Dây Pha (L):</strong> Đi từ nguồn qua Cầu chì → Vào cực chung của Công tắc 1.</li>
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-500 text-white flex justify-center items-center flex-shrink-0 shadow">~</div> <strong>Dây nối (Dây chuyển đổi):</strong> 2 cực bìa của Công tắc 1 nối tương ứng với 2 cực bìa của Công tắc 2.</li>
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-green-500 text-white flex justify-center items-center flex-shrink-0 shadow">💡</div> <strong>Dây đèn:</strong> Cực chung của Công tắc 2 nối vào 1 đầu của Đuôi đèn.</li>
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-500 text-white flex justify-center items-center flex-shrink-0 shadow">N</div> <strong>Dây Trung tính (N):</strong> Nối trực tiếp từ nguồn vào đầu còn lại của Đuôi đèn.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-quytrinh" class="tab-content">
+                <h3 class="text-2xl font-black text-center text-[#0060a8] mb-6 uppercase">3. Quy trình lắp đặt (5 Bước)</h3>
+                <div class="pt-news-item">
+                    <div class="pt-news-number">01</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title">Vạch dấu</div>
+                        <div class="pt-news-desc">Xác định vị trí các thiết bị trên bảng điện. Yêu cầu: Chính xác, cân đối.</div>
+                    </div>
+                    <button class="pt-news-btn">Quan trọng</button>
+                </div>
+                <div class="pt-news-item">
+                    <div class="pt-news-number">02</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title">Khoan lỗ</div>
+                        <div class="pt-news-desc">Khoan lỗ bắt vít và lỗ luồn dây. Yêu cầu: Lỗ khoan thẳng, không nứt bảng.</div>
+                    </div>
+                </div>
+                <div class="pt-news-item">
+                    <div class="pt-news-number">03</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title">Lắp thiết bị</div>
+                        <div class="pt-news-desc">Gắn cầu chì, công tắc vào bảng điện. Yêu cầu: Chắc chắn, đúng vị trí.</div>
+                    </div>
+                </div>
+                <div class="pt-news-item">
+                    <div class="pt-news-number text-red-400">04</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title text-red-500">Nối dây mạch điện (Đi dây)</div>
+                        <div class="pt-news-desc font-bold text-gray-800">Nối dây theo sơ đồ lắp đặt. Mối nối phải an toàn, đúng kỹ thuật.</div>
+                    </div>
+                    <button class="pt-news-btn" style="background: #e74c3c;">Thực hành ngay</button>
+                </div>
+                <div class="pt-news-item border-none">
+                    <div class="pt-news-number text-green-400">05</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title text-green-500">Kiểm tra</div>
+                        <div class="pt-news-desc font-bold text-gray-800">Nối nguồn và vận hành thử. Yêu cầu: Đèn sáng/tắt đúng yêu cầu.</div>
+                    </div>
+                    <button class="pt-news-btn" style="background: #2ecc71;">Hoàn thành</button>
+                </div>
+            </div>
+
+            <div id="tab-antoan" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-red-50 p-6 rounded-2xl border-2 border-red-200">
+                        <h3 class="text-xl font-black text-red-600 mb-4 uppercase">Quy tắc An toàn Điện (Bắt buộc)</h3>
+                        <ul class="list-disc pl-5 space-y-3 font-bold text-gray-700">
+                            <li><strong>An toàn là trên hết:</strong> Luôn ngắt nguồn điện trước khi đấu nối và dùng bút thử điện kiểm tra lại.</li>
+                            <li><strong>Phân biệt cực:</strong> Phải xác định đúng cực chung của công tắc 3 cực. Nối nhầm cực chung mạch sẽ bị chập.</li>
+                            <li><strong>Màu dây:</strong> Nên dùng dây màu <span class="text-red-500">đỏ</span> cho dây pha (L) và màu <span class="text-blue-500">xanh/đen</span> cho dây trung tính (N).</li>
+                            <li><strong>Vỏ cách điện:</strong> Đảm bảo các mối nối được quấn băng keo cách điện kín.</li>
+                            <li><strong>Kiểm tra cuối:</strong> Luôn dùng đồng hồ vạn năng hoặc bút thử điện kiểm tra thông mạch.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-yellow-50 p-6 rounded-2xl border-2 border-yellow-200">
+                        <h3 class="text-xl font-black text-yellow-600 mb-4 uppercase">Các lỗi thường gặp</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-700 bg-white rounded-lg shadow-sm">
+                                <thead class="text-xs text-white uppercase bg-yellow-500">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 rounded-tl-lg">Hiện tượng</th>
+                                        <th scope="col" class="px-4 py-3">Nguyên nhân &amp; Cách khắc phục</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="px-4 py-3 font-bold">Đèn không sáng</td>
+                                        <td class="px-4 py-3">Cầu chì đứt, bóng cháy hoặc lỏng mối nối → <em>Kiểm tra cầu chì, thay bóng, siết ốc.</em></td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="px-4 py-3 font-bold">Chỉ 1 CT điều khiển được</td>
+                                        <td class="px-4 py-3">Nối nhầm cực chung với cực động → <em>Xác định lại cực chung và đấu lại.</em></td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="px-4 py-3 font-bold">Nghe tiếng nổ/chập</td>
+                                        <td class="px-4 py-3">Dây pha và trung tính chạm nhau → <em>Ngắt điện NGAY, kiểm tra đầu dây.</em></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 font-bold rounded-bl-lg">Đèn nhấp nháy khi tắt</td>
+                                        <td class="px-4 py-3 rounded-br-lg">Đấu nhầm dây trung tính vào CT → <em>Đảo lại vị trí dây nguồn.</em></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-                <div class="md:w-1/2 text-lg">
-                    <h3 class="font-bold text-yellow-600 dark:text-yellow-400 mb-4">Cách thức vận hành:</h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start text-gray-700 dark:text-gray-300">
-                            <span class="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center justify-center mr-3 mt-1 text-sm flex-shrink-0">1</span>
-                            <span>Cho phép bật/tắt đèn từ hai vị trí khác nhau (ví dụ: đầu và cuối cầu thang).</span>
-                        </li>
-                        <li class="flex items-start text-gray-700 dark:text-gray-300">
-                            <span class="bg-blue-500 text-white rounded-full h-6 w-6 flex items-center justify-center mr-3 mt-1 text-sm flex-shrink-0">2</span>
-                            <span>Sử dụng <b>công tắc 3 cực</b> để chuyển đổi dòng điện giữa hai dây nối song song.</span>
-                        </li>
-                    </ul>
-                </div>
             </div>
-        </div>
 
-        <div id="quy-trinh" class="mb-16">
-            <h2 class="text-3xl font-bold text-blue-800 dark:text-blue-300 border-l-8 border-yellow-400 pl-4 mb-8 uppercase text-center">Quy trình thực hiện</h2>
-            <div class="max-w-4xl mx-auto space-y-4">
-                <div class="flex items-center bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-4 border-blue-500 card-hover">
-                    <span class="text-4xl font-bold text-blue-100 dark:text-blue-900 mr-6">01</span>
-                    <div>
-                        <h4 class="font-bold text-xl text-gray-800 dark:text-white">Vạch dấu</h4>
-                        <p class="text-gray-600 dark:text-gray-400">Xác định vị trí các thiết bị trên bảng điện và đường đi dây.</p>
-                    </div>
-                </div>
-                <div class="flex items-center bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-4 border-yellow-500 card-hover">
-                    <span class="text-4xl font-bold text-yellow-100 dark:text-yellow-900 mr-6">02</span>
-                    <div>
-                        <h4 class="font-bold text-xl text-gray-800 dark:text-white">Khoan lỗ</h4>
-                        <p class="text-gray-600 dark:text-gray-400">Khoan lỗ bắt vít và lỗ luồn dây dẫn qua bảng điện.</p>
-                    </div>
-                </div>
-                <div class="flex items-center bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-4 border-green-500 card-hover">
-                    <span class="text-4xl font-bold text-green-100 dark:text-green-900 mr-6">03</span>
-                    <div>
-                        <h4 class="font-bold text-xl text-gray-800 dark:text-white">Lắp thiết bị</h4>
-                        <p class="text-gray-500 dark:text-gray-400 text-sm italic">Sắp xếp cầu chì, công tắc chắc chắn vào vị trí.</p>
-                    </div>
-                </div>
-                <div class="flex items-center bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-l-4 border-red-500 card-hover">
-                    <span class="text-4xl font-bold text-red-100 dark:text-red-900 mr-6">04</span>
-                    <div>
-                        <h4 class="font-bold text-xl uppercase text-red-600 dark:text-red-400">Nối dây mạch điện</h4>
-                        <p class="text-gray-600 dark:text-gray-300 font-semibold italic">Bước quan trọng nhất: Kết nối các thiết bị theo đúng sơ đồ lắp đặt.</p>
+            <div id="tab-ungdung" class="tab-content">
+                <div class="bg-gradient-to-r from-blue-100 to-green-100 rounded-2xl p-8 text-center border-2 border-blue-200 shadow-md">
+                    <h3 class="text-3xl font-black text-[#0060a8] mb-6 uppercase">Ứng dụng mở rộng trong thực tế</h3>
+                    <p class="text-lg font-bold text-gray-700 mb-8 max-w-2xl mx-auto">
+                        Mạch này không chỉ dùng cho cầu thang mà còn được gọi là <strong>mạch điều khiển hai nơi</strong>. 
+                        Bạn có thể bắt gặp nó ở rất nhiều không gian kiến trúc khác nhau!
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow border-b-4 border-blue-400 hover:-translate-y-2 transition-transform">
+                            <div class="text-4xl mb-3">🛏️</div>
+                            <h4 class="font-black text-xl text-blue-800 mb-2">Phòng Ngủ</h4>
+                            <p class="text-sm text-gray-600 font-semibold">Một công tắc ở cửa ra vào, một công tắc ở đầu giường để tắt đèn không cần ngồi dậy.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow border-b-4 border-green-400 hover:-translate-y-2 transition-transform">
+                            <div class="text-4xl mb-3">🏢</div>
+                            <h4 class="font-black text-xl text-green-800 mb-2">Hành Lang Dài</h4>
+                            <p class="text-sm text-gray-600 font-semibold">Bật đèn ở đầu hành lang và tắt đèn khi đã đi tới cuối hành lang, cực kỳ tiện lợi.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow border-b-4 border-orange-400 hover:-translate-y-2 transition-transform">
+                            <div class="text-4xl mb-3">🏭</div>
+                            <h4 class="font-black text-xl text-orange-800 mb-2">Nhà Kho</h4>
+                            <p class="text-sm text-gray-600 font-semibold">Áp dụng cho các nhà kho có hai cửa ra vào đối diện nhau dễ thao tác ánh sáng.</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="tro-choi" class="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-xl border-t-8 border-yellow-400">
-            <h2 class="text-3xl font-bold text-center text-blue-800 dark:text-blue-300 mb-2 uppercase">Vòng Quay Gọi Tên</h2>
-            <p class="text-center text-gray-500 dark:text-gray-400 mb-8">Ai sẽ là người may mắn trả lời câu hỏi hôm nay?</p>
-            
-            <div class="text-center relative">
-                <div class="wheel-container">
-                    <div class="pointer"></div>
-                    <canvas id="wheelCanvas" class="wheel" width="400" height="400"></canvas>
-                </div>
-                
-                <button id="spinBtn" onclick="spinWheel()" class="mt-6 bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg transform transition hover:scale-105">
-                    🎲 XOAY VÒNG QUAY
-                </button>
-
-                <div id="result-modal" class="mt-8 p-6 bg-yellow-50 dark:bg-gray-700 border-2 border-yellow-200 dark:border-gray-500 rounded-2xl inline-block">
-                    <h3 class="text-2xl text-yellow-700 dark:text-yellow-400 mb-4">🎉 Xin chúc mừng bạn: <br><span id="winnerName" class="text-4xl font-extrabold text-red-500 dark:text-red-400 block mt-2"></span></h3>
-                    <button onclick="goToQuiz()" class="bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-8 rounded-full text-lg shadow-md transition">
-                        Bắt Đầu Phần Thi Trắc Nghiệm
+            <div id="tab-trochoi" class="tab-content">
+                <div class="text-center bg-[#fdf5e6] rounded-2xl p-6 border-2 border-[#ffeaa7]">
+                    <h3 class="text-2xl font-black text-[#d35400] mb-2 uppercase">Vòng Quay Nhân Phẩm</h3>
+                    <p class="font-bold text-gray-600 mb-6">Ai sẽ là người may mắn trả lời câu hỏi hôm nay?</p>
+                    
+                    <div class="wheel-container">
+                        <div class="pointer"></div>
+                        <canvas id="wheelCanvas" class="wheel" width="350" height="350"></canvas>
+                    </div>
+                    
+                    <button id="spinBtn" onclick="spinWheel()" class="mt-4 pt-btn-orange text-xl px-10 py-3 rounded-full uppercase" style="box-shadow: 0 6px 0 #d97700;">
+                        🎲 Quay Ngay
                     </button>
+
+                    <div id="result-modal" class="mt-6 p-4 bg-white border-2 border-yellow-400 rounded-xl hidden">
+                        <h4 class="font-bold text-gray-700">🎉 Chúc mừng bạn:</h4>
+                        <span id="winnerName" class="text-3xl font-black text-red-500 block my-2"></span>
+                        <button onclick="goToQuiz()" class="bg-[#1eb8ff] text-white font-bold py-2 px-6 rounded-full border-b-4 border-[#0097e6] hover:bg-[#00a8ff] transition">
+                            Vào Thi Trắc Nghiệm &gt;
+                        </button>
+                    </div>
+                </div>
+
+                <div id="quiz-section" class="mt-8 pt-8 border-t-2 border-dashed border-gray-300 hidden">
+                    <h3 class="text-xl font-black text-center text-[var(--pt-blue)] mb-2">Phần thi của: <span id="quizPlayerName" class="text-[var(--pt-orange)]"></span></h3>
+                    <div id="quizContainer" class="space-y-4 max-w-3xl mx-auto mt-6"></div>
                 </div>
             </div>
 
-            <div id="quiz-section" class="mt-12 pt-8 border-t-2 border-dashed border-gray-300 dark:border-gray-600">
-                <h3 class="text-2xl font-bold text-center text-blue-800 dark:text-blue-300 mb-2">Phần thi của: <span id="quizPlayerName" class="text-pink-500 dark:text-pink-400"></span></h3>
-                <p class="text-center text-gray-500 dark:text-gray-400 italic mb-8">Gồm 3 câu hỏi ngẫu nhiên (2 Dễ - 1 Khó). Chọn đáp án đúng nhất!</p>
-                <div id="quizContainer" class="space-y-6 max-w-4xl mx-auto"></div>
-            </div>
         </div>
-
     </main>
 
-    <footer class="bg-[#1a1a1a] dark:bg-black text-white py-12 mt-20">
-        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center opacity-80">
-            <div class="mb-6 md:mb-0">
-                <div class="text-2xl font-bold text-yellow-400 mb-2">CN9 - THỰC HÀNH</div>
-                <p class="text-sm">Trang web hỗ trợ học tập môn Công nghệ 9</p>
-                <p class="text-xs mt-4">© 2026 Bài giảng điện tử - Tác giả: Bún Đậu</p>
+    <div class="floating-qr hidden lg:block">
+        <div class="bg-white p-1 rounded mb-2">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMCAYAAACuwEE+AAAIiUlEQVR4Aeyc0XLcxg5E9+T///leb5RKiEN5YOyQWi4HrlBmE0AD09NVUF781//6TytQUOCvR/9pBQoKtGEKYnXq49GGaReUFNgZBnjAzz2lab9Jhtqs31CET1Djg1p+aPYLQKz/9Wn4H8R8OBd7mJ1hnNC4Fdgq0IbZqtHvqQIfY5j0JJ3wIwqkhvn1v+iPI5/qqWC8o83nWR2HGp/rzW+c5WdxiPM539j9Z7H5jVPDuKDx2gq0Yda+//Lp2zBlydYuKBsG4o6FMa7KC5GvupMh1ru/+RzPMIz5XQ8xHyJ2/tHzQewHEbt/hsuGyQg7fm8F2jBH3+/N+dowN7/go4/3cYaB2g727wQwV2++7EKq+VCbL+t/dPzjDHO0AM1XU6ANU9Nr+ew2zPIWqAnw8YaBuPOz3xlm4xD7We4qP0S+rN79fhp/vGF+WrD79HvtJG2Y13RbtqoNs+zVv3bwsmG8YzP82lj/VUHc8f9Fvt7cH2I+RPxV9fufEPMh4t9XfkUg5sMYZ/N/sf75T/Nl+M+ZvzLLhvkq65+rKtCGWfXmXzx3G+ZF4VYtSw0D4x0MtXhVaO/g2XqI82b8WTybZ7Y+44d4HpjDWb/UMBlBPd4Vn6xAG+aTb+8Ns7dh3iD6J7fcGcY792yciQdxJ2f51ThEfp+3yud6GPPDOO7+5j8bu//OME5o3ApsFWjDbNXo91SBNkwqUSdsFdgZBuJO3SY/3yHGYQ4/ObePd/I29so7xPkyDvg3/9t/J6da7/NA5M/4HIdYD3PY/BneGSYr6PjaCrRh1r7/8unbMGXJ1i5IDQNxR1ou72jjLN9xiP3MZ+x6x6s443Mc4ryOG3sex2fxLD+Mz5MaZvYAXX8vBdow97rP00/Thjld4vMb/GSH1DDeicYw3nk+DMR8iLiaD+N68xlDrPf5nG/sfGPnw7gfxDhEbH5jGOdX53F+ahgXNF5bgTbM2vdfPn0bpizZ2gU/bhjvXGNfRzUOcYebD+bi2Tyz/ar87mcM4/M6P8M/bphsoI5fW4E2zLXv53LTTRnmcqfpgU5XYGcY71CIOxAizias8mX5Wbw6j/PN7zjE80PEzs/4nA9jvtl8z2MM4/47w3igxq3AVoE2zFaNfk8VaMOkEnXCVoHDDQNxB0LE3pnG2+G+e4fI913O9hvEfIh4m/t8hxiHiD2vMcR8iNj5z56jx/kw5nP+iPsZg8j3/DZ6DjfMqFnHPl+BNQzz+fd0mRO0YS5zFZ8xSGoY70RjHzOLw3hnwjhufmPPk2HXG2f1EOfN6mEuP5tnNp7NnxpmdoCuv5cCbZh73efpp2nDnC7xvRpMG8Y7D+KOtlyz+eY7GkOcvzovxHrPZ75q3PkQ+0HEWX42j+unDWPCxjMKXL+2DXP9O7rUhG2YS13H9YfZGQbiDoSIfSSI8WwnQsw3XxXDmM/zGLuf4xD5Hc/qs3zXQ+zneJXP+cbmh3H/nWFM0LgV2CrQhtmq0e+pAm2YVKJO2CqQGsY7D8Y7DmLc9cbbYb57h8gHEZvPGGL+dz2232CcD3Pxba/nO0Q+z//M2T4Q87ex57vrIeZDxM+ayvOPYSolnbuyAm2YlW//hbO3YV4QbeWSacN4ZxpD3JkQsfMzfPRlQZwn48/mcxwiP0Ts/Kx/FocaP9Typw2THaDj91KgDXOv+zz9NG2Y0yW+V4PUMDDecRDjlsc72tj5xhD4H9X6jM/xDEOcx/kwjjs/w2eft8qfGiY7UMfXUqANs9Z9T5+2DTMt4VoEhxsGxjsczo37+qo7OqvP+BzPsPtB1AciNp/rM+x6iPxZ/eGGyRp2/LMVaMN89v39+PRtmJMkvyvt4YbxjrRwjkPcoY4bm88YIh9EnPE5DrEeInb/KobI5/7mg3F+Vm8+50Pkd/7hhnGDxvdSoA1zr/s8/TRtmNMlvleD1DDecT6+4xB3IIyx680Psb4aNz/U+Fzv/sYwxw/jes8DMR8idn42b5afGsYNGq+tQBtm7ft/PIrnb8MUBVs9/XDDeAdmGOLOhYh9QRmf41n9bBzivO4P43jWv8rnfPPDeB6Icdcfbhg3aHwvBdow97rP00/Thjld4ns1ONwwEHcgjPGsnDDmhxiv9oNxvX9ngJifxSHmwxh7fqjlex7zZfHDDeMBGt9LgfcZ5l46LnOaNswyV33MQXeGyXZY1tb1VZzxQ9zZWb77Q6yfjUPkq87j/q53PMOuN4Y4L4yx63eGcULjVmCrQBtmq0a/pwq0YVKJOmGrwM4wMN5pcGx8O8zzPdvRjj9rRg/EeZ0L47jzjWfngVp/qOV73gxn59kZJiNcL94n3irQhtmq0e+pAm2YVKJO2CqQGsY7bRZvm3/3DnFHQ8Tf1Yy+VecdcT1j5nt+2z6Ow9z8W+7nu/mf30YPHNs/NcxomI6tp0AbZr07nzpxG2ZKvvWKy4aBuBNhjGcl9c6G2M9x94OY77hxlQ/G/BlfFofID7/FD8DH2WH3M94V6EPZMKpvuJgCbZjFLnz2uG2YWQUXq7+8YYC/dzN8/Z3dT3Unwxcv/NnfGT+MeVwPMb96PvNl9Y5D7A8RO//yhvHAjd+rQBvmvfp/XPc2zMdd2XsHPsIwp56guqNhvIM9rPmNnW/s/AxDnC/LdxxiPUTsfOPq/M6/vGE8cOP3KtCGea/+H9e9DfNxV/begcuG8U7McPV45nN9Fp/Nh/HvBOY3hlgPETs/wxDrfX5jiPkwxll/x8uGMUHjtRRow6x139OnXcow02o1wSM1DIx3INTimeYQ+ZwPMQ4RV3e6+Y+uN5/7QZwfIq7WZ/mOQ+zn+YxTw7ig8doKtGHWvv/y6dswZcnWLtgZxjvubGz53S+LH50/28/1xp43w643dv3RcfPtDOOExq3AVoE2zFaNq7xfeI42zIUv54qj/R8AAP//xSU9MQAAAAZJREFUAwDs3Q/Z1w1FMgAAAABJRU5ErkJggg==" alt="QR Code">
+        </div>
+        <div class="w-full bg-red-500 text-white font-black text-[10px] py-1 mb-2">TÀI LIỆU</div>
+        <div class="qr-btn"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M14.59 13.59L12 16.17L9.41 13.59L8 15l4 4l4-4l-1.41-1.41zM12 4c-4.41 0-8 3.59-8 8s3.59 8 8 8s8-3.59 8-8s-3.59-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6s6 2.69 6 6s-2.69 6-6 6z"></path></svg> PPTX</div>
+        <div class="qr-btn"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"></path></svg> PDF</div>
+        <div class="qr-social">
+            <div><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"></path></svg></div>
+            <div><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"></path></svg></div>
+        </div>
+    </div>
+
+    <footer class="bg-[var(--pt-dark-blue)] text-white pt-8 pb-4 border-t-8 border-[#004f8b] relative z-20">
+        <div class="container mx-auto px-4 flex flex-col items-center">
+            <div class="flex space-x-6 mb-6">
+                <div class="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center cursor-pointer hover:bg-white hover:text-[var(--pt-dark-blue)] transition font-bold text-lg">f</div>
+                <div class="w-12 h-12 rounded-full border-2 border-white flex items-center justify-center cursor-pointer hover:bg-white hover:text-[var(--pt-dark-blue)] transition"><svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"></path></svg></div>
             </div>
-            <div class="flex space-x-4">
-                <div class="bg-gray-700 h-10 w-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-600 transition">FB</div>
-                <div class="bg-gray-700 h-10 w-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 transition">YT</div>
-                <div class="bg-gray-700 h-10 w-10 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-500 transition">TK</div>
+            <div class="flex gap-4 mb-4 text-xl font-black text-[#ff8c00]">
+                <span>ĐIỀN VIÊN</span>
+                <span class="text-white">|</span>
+                <span class="text-[#00d2ff]">TEAM 2</span>
+            </div>
+            <div class="text-center text-[11px] text-gray-300 font-bold max-w-2xl leading-relaxed">
+                <p>Website hỗ trợ học tập môn Công nghệ 9 - Lắp Mạch Điện Cầu Thang.</p>
+                <p>Designed by Bún Đậu. PTG Styling.</p>
+                <p>Bản quyền tài liệu.</p>
             </div>
         </div>
     </footer>
 
     <script>
-        // --- 0. DARK MODE TOGGLE ---
-        const themeToggle = document.getElementById('themeToggle');
-        const html = document.documentElement;
-
-        // Kiểm tra trạng thái đã lưu
-        if (localStorage.getItem('theme') === 'dark') {
-            html.classList.add('dark');
-            themeToggle.checked = true;
+        function switchTab(event, tabId) {
+            if(event) event.preventDefault();
+            
+            let btns = document.querySelectorAll('.pt-tab-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            
+            let contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            if(event && event.currentTarget.classList.contains('pt-tab-btn')) {
+                event.currentTarget.classList.add('active');
+            } else {
+                document.querySelector(`button[onclick*="${tabId}"]`).classList.add('active');
+            }
+            document.getElementById(tabId).classList.add('active');
         }
 
-        themeToggle.addEventListener('change', function() {
-            if (this.checked) {
-                html.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                html.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            }
-        });
-
-        // --- 1. ĐỒNG HỒ THỜI GIAN THỰC ---
         function updateClock() {
             const now = new Date();
-            const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+            const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
             const dayName = days[now.getDay()];
             const date = String(now.getDate()).padStart(2, '0');
             const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -269,52 +457,42 @@
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
 
-            document.getElementById('realTimeClock').innerText = `${dayName}, ${date}/${month}/${year} - ${hours}:${minutes}:${seconds}`;
+            document.getElementById('realTimeClock').innerText = `Thứ ${now.getDay()===0?'Nhật':now.getDay()+1}, ${date}/${month}/${year} - ${hours}:${minutes}:${seconds}`;
         }
         setInterval(updateClock, 1000);
 
-        // --- 2. DATA CÂU HỎI ---
-        const easyQuestions = [
-            { q: "Thiết bị nào có 3 chốt nối dây trong bài học này?", opts: ["A. Cầu chì", "B. Công tắc 2 cực", "C. Công tắc 3 cực", "D. Ổ cắm"], ans: 2 },
-            { q: "Công tắc 3 cực dùng trong mạch đèn cầu thang gồm có:", opts: ["A. 2 cực tĩnh, 1 cực động", "B. 1 cực tĩnh, 2 cực động", "C. 3 cực tĩnh", "D. 3 cực động"], ans: 0 },
-            { q: "Mục đích chính của mạch điện đèn cầu thang là:", opts: ["A. Tiết kiệm điện", "B. Điều khiển 1 đèn ở 2 nơi", "C. Điều khiển 2 đèn ở 1 nơi", "D. Làm đèn sáng hơn"], ans: 1 },
-            { q: "Trong sơ đồ, cầu chì được lắp vào loại dây nào?", opts: ["A. Dây trung hòa", "B. Dây pha", "C. Dây nối đất", "D. Dây cặp"], ans: 1 },
-            { q: "Cực chung của công tắc 3 cực thứ nhất nối với:", opts: ["A. Đèn", "B. Cầu chì", "C. Dây trung hòa", "D. Cực tĩnh công tắc 2"], ans: 1 },
-            { q: "Hai cực tĩnh của công tắc 3 cực thứ nhất nối với:", opts: ["A. Hai cực tĩnh của công tắc 2", "B. Cực chung của công tắc 2", "C. Nguồn điện", "D. Bóng đèn"], ans: 0 },
-            { q: "Cực chung của công tắc 3 cực thứ hai nối với:", opts: ["A. Cầu chì", "B. Dây pha", "C. Một đầu bóng đèn", "D. Dây trung hòa"], ans: 2 },
-            { q: "Đầu còn lại của bóng đèn (không nối với công tắc) sẽ nối với:", opts: ["A. Dây pha", "B. Dây trung hòa", "C. Cầu chì", "D. Vỏ bảng điện"], ans: 1 },
-            { q: "Ký hiệu dây pha trong sơ đồ điện là:", opts: ["A. N", "B. A (hoặc L)", "C. G", "D. PE"], ans: 1 },
-            { q: "Ký hiệu dây trung hòa trong sơ đồ điện là:", opts: ["A. L", "B. N", "C. P", "D. F"], ans: 1 },
-            { q: "Bước đầu tiên trong quy trình lắp đặt là:", opts: ["A. Nối dây mạch điện", "B. Vạch dấu", "C. Lắp thiết bị vào bảng điện", "D. Kiểm tra"], ans: 1 },
-            { q: "Bước cuối cùng trong quy trình lắp đặt là:", opts: ["A. Vạch dấu", "B. Khoan lỗ", "C. Kiểm tra", "D. Nối dây"], ans: 2 }
+        const quizQuestions = [
+            { 
+                q: "Công tắc 3 cực khác công tắc 2 cực ở điểm nào?", 
+                opts: ["A. Có 2 cực tĩnh, 1 cực động.", "B. Có 1 cực tĩnh, 2 cực động.", "C. Có 3 cực tĩnh.", "D. Có 3 cực động."], 
+                ans: 1 
+            },
+            { 
+                q: "Thiết bị nào có chức năng bảo vệ mạch điện khi xảy ra sự cố quá tải hoặc chập mạch?", 
+                opts: ["A. Công tắc 3 cực.", "B. Đuôi đèn.", "C. Cầu chì.", "D. Bảng điện."], 
+                ans: 2 
+            },
+            { 
+                q: "Trong mạch đèn cầu thang, hai công tắc 3 cực được nối với nhau như thế nào?", 
+                opts: ["A. Nối tiếp tiếp điểm chung.", "B. Nối song song hai bóng đèn.", "C. Nối hai cặp cực động với nhau.", "D. Nối trực tiếp vào nguồn điện 220V."], 
+                ans: 2 
+            }
         ];
 
-        const hardQuestions = [
-            { q: "Nếu ta thay công tắc 3 cực bằng công tắc 2 cực, mạch có điều khiển được đèn ở 2 nơi không?", opts: ["A. Có", "B. Không", "C. Chỉ bật được, không tắt được", "D. Tùy vào loại dây"], ans: 1 },
-            { q: "Tại sao dây pha phải đi qua cầu chì rồi mới đến công tắc?", opts: ["A. Để đèn sáng hơn", "B. Để bảo vệ toàn bộ mạch khi có sự cố", "C. Để tiết kiệm dây", "D. Để dễ sửa bóng đèn"], ans: 1 },
-            { q: "Nếu dây pha nối trực tiếp vào đèn, còn công tắc 3 cực nối ở dây trung hòa, hiện tượng gì xảy ra khi tắt đèn?", opts: ["A. Đèn vẫn sáng", "B. Đèn tắt nhưng đui đèn vẫn có điện, gây nguy hiểm", "C. Đèn cháy ngay lập tức", "D. Cầu chì nổ"], ans: 1 },
-            { q: "Sơ đồ lắp đặt khác sơ đồ nguyên lý ở điểm nào?", opts: ["A. Chỉ dùng để trang trí", "B. Thể hiện vị trí thực tế và cách đi dây", "C. Không có dây trung hòa", "D. Thể hiện mối liên hệ điện"], ans: 1 },
-            { q: "Một mạch cầu thang đang hoạt động, bỗng nhiên chỉ bật được ở tầng 1 mà không tắt được ở tầng 2. Nguyên nhân có thể do:", opts: ["A. Hỏng 1 cực tĩnh của công tắc tầng 2", "B. Cháy bóng đèn", "C. Đứt dây trung hòa", "D. Nổ cầu chì"], ans: 0 },
-            { q: "Nếu nối chéo 2 cực tĩnh của công tắc 1 với 2 cực tĩnh của công tắc 2, mạch có hoạt động đúng không?", opts: ["A. Không hoạt động", "B. Vẫn hoạt động đúng nguyên lý", "C. Gây chập mạch", "D. Đèn sáng yếu"], ans: 1 },
-            { q: "Khi kiểm tra mạch điện mà không có nguồn, thiết bị nào hỗ trợ kiểm tra thông mạch tốt nhất?", opts: ["A. Bút thử điện", "B. Pin và đèn LED (hoặc đồng hồ đo Ohm)", "C. Thước dây", "D. Tua vít"], ans: 1 },
-            { q: "Tại sao trong mạch đèn cầu thang, người ta ít dùng cầu dao đảo chiều thay cho công tắc 3 cực?", opts: ["A. Cầu dao đắt hơn", "B. Cầu dao cồng kềnh và không thẩm mỹ", "C. Cầu dao không dẫn điện tốt", "D. Cầu dao dễ cháy"], ans: 1 }
-        ];
-
-        // --- 3. DATA VÒNG QUAY ---
         const names = [
-            "Lý Gia An", "Nguyễn Ngọc Trầm Anh", "Triệu Trần Phương Anh", "Dương Anh Bảo", 
-            "Võ Quốc Cường", "Dương Ngọc Trân Châu", "Huỳnh Quốc Đại", "Vũ Tiến Đạt", 
-            "Nguyễn Trần Nghi Hân", "Đặng Minh Hoàng", "Trần Gia Huy", "Dương Minh Kim", 
-            "Lý Quốc Khánh", "Huỳnh Phúc Lộc", "Tô Gia Minh", "Ngô Nguyễn Phương Nghi", 
-            "Nguyễn Trần Khánh Ngọc", "Võ Đỗ Phương Nguyên", "Đặng Khôi Nguyên", "Nguyễn Trọng Nhân", 
-            "Phạm Quỳnh Như", "Nguyễn Hồng Quang", "Nguyễn Gia Quy", "Võ Dương Ngọc Quý", 
-            "Trần Nguyễn Tú Quỳnh", "Trương Nhã Quỳnh", "Lý Hưng Thịnh", "Nguyễn Thị Kiều Trang", 
-            "Võ Lê Minh Triết", "Phạm Phú Trọng", "Lê Nhã Uyên", "Tôn Huỳnh Thảo Vy"
+            "Lý Gia An", "N.N. Trầm Anh", "T.T. Phương Anh", "Dương Anh Bảo", 
+            "Võ Quốc Cường", "D.N. Trân Châu", "Huỳnh Quốc Đại", "Vũ Tiến Đạt", 
+            "N.T. Nghi Hân", "Đặng Minh Hoàng", "Trần Gia Huy", "Dương Minh Kim", 
+            "Lý Quốc Khánh", "Huỳnh Phúc Lộc", "Tô Gia Minh", "N.N. Phương Nghi", 
+            "N.T. Khánh Ngọc", "V.Đ. Phương Nguyên", "Đặng Khôi Nguyên", "Nguyễn Trọng Nhân", 
+            "Phạm Quỳnh Như", "Nguyễn Hồng Quang", "Nguyễn Gia Quy", "V.D. Ngọc Quý", 
+            "T.N. Tú Quỳnh", "Trương Nhã Quỳnh", "Lý Hưng Thịnh", "N.T. Kiều Trang", 
+            "V.L. Minh Triết", "Phạm Phú Trọng", "Lê Nhã Uyên", "T.H. Thảo Vy"
         ];
         
         let currentRotation = 0;
         let isSpinning = false;
-        const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#ff9800', '#ff5722'];
+        const colors = ['#ff4757', '#ffa502', '#2ed573', '#1e90ff', '#3742fa', '#ff6348', '#7bed9f', '#70a1ff', '#5352ed', '#eccc68'];
 
         function initGame() {
             updateClock();
@@ -338,7 +516,7 @@
                 ctx.fillStyle = colors[i % colors.length];
                 ctx.fill();
                 ctx.lineWidth = 1;
-                ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+                ctx.strokeStyle = '#ffffff';
                 ctx.stroke();
                 
                 ctx.save();
@@ -346,11 +524,8 @@
                 ctx.rotate(i * sliceAngle + sliceAngle / 2);
                 ctx.textAlign = "right";
                 ctx.fillStyle = "#fff";
-                ctx.font = "bold 11px Arial"; 
-                let displayName = names[i];
-                if(displayName.length > 20) displayName = displayName.substring(0, 18) + '...';
-                
-                ctx.fillText(displayName, radius - 15, 4);
+                ctx.font = "bold 11px Nunito"; 
+                ctx.fillText(names[i].substring(0,18), radius - 15, 4);
                 ctx.restore();
             }
         }
@@ -359,105 +534,64 @@
             if (isSpinning) return;
             isSpinning = true;
             
-            document.getElementById('result-modal').style.display = 'none';
-            document.getElementById('quiz-section').style.display = 'none';
+            document.getElementById('result-modal').classList.add('hidden');
+            document.getElementById('quiz-section').classList.add('hidden');
             
             let canvas = document.getElementById('wheelCanvas');
-            let spinFast = 360 * 100; 
-            currentRotation += spinFast;
+            currentRotation += 360 * 30; 
             
-            canvas.style.transition = 'transform 10s linear';
+            canvas.style.transition = 'transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)';
+            
+            let randomSegment = Math.floor(Math.random() * names.length);
+            let segmentDegree = 360 / names.length;
+            let targetDegree = (270 - (randomSegment * segmentDegree) - (segmentDegree / 2) + 360) % 360;
+            
+            currentRotation += targetDegree;
             canvas.style.transform = `rotate(${currentRotation}deg)`;
 
             setTimeout(() => {
-                let randomSegment = Math.floor(Math.random() * names.length);
-                let segmentDegree = 360 / names.length;
-                let targetDegree = (270 - (randomSegment * segmentDegree) - (segmentDegree / 2) + 360) % 360;
-                
-                let finalSpin = (360 * 3) + targetDegree; 
-                let extraOffset = 360 - (currentRotation % 360);
-                
-                currentRotation += extraOffset + finalSpin;
-
-                canvas.style.transition = 'transform 3s cubic-bezier(0.1, 0.7, 0.1, 1)';
-                canvas.style.transform = `rotate(${currentRotation}deg)`;
-
-                setTimeout(() => {
-                    isSpinning = false;
-                    document.getElementById('winnerName').innerText = names[randomSegment];
-                    document.getElementById('result-modal').style.display = 'block';
-                    
-                    document.getElementById('result-modal').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 3000);
-
-            }, 15000);
-        }
-
-        // --- 4. LOGIC TRẢ LỜI CÂU HỎI ---
-        function getRandom(arr, n) {
-            let result = new Array(n), len = arr.length, taken = new Array(len);
-            while (n--) {
-                let x = Math.floor(Math.random() * len);
-                result[n] = arr[x in taken ? taken[x] : x];
-                taken[x] = --len in taken ? taken[len] : len;
-            }
-            return result;
+                isSpinning = false;
+                document.getElementById('winnerName').innerText = names[randomSegment];
+                document.getElementById('result-modal').classList.remove('hidden');
+                document.getElementById('result-modal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 5000);
         }
 
         function goToQuiz() {
             let winner = document.getElementById('winnerName').innerText;
             document.getElementById('quizPlayerName').innerText = winner;
-            document.getElementById('quiz-section').style.display = 'block';
+            document.getElementById('quiz-section').classList.remove('hidden');
             
-            generateQuiz();
-            setTimeout(() => {
-                document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
-        }
-
-        function generateQuiz() {
-            let selectedEasy = getRandom(easyQuestions, 2);
-            let selectedHard = getRandom(hardQuestions, 1);
-            let finalQuestions = [...selectedEasy, ...selectedHard]; 
-            
+            let finalQuestions = quizQuestions; 
             let container = document.getElementById('quizContainer');
             container.innerHTML = '';
 
             finalQuestions.forEach((qObj, index) => {
-                let isHard = index === 2;
                 let qDiv = document.createElement('div');
-                qDiv.className = 'bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-md border border-gray-100 dark:border-gray-700 transition-colors duration-300';
+                qDiv.className = 'bg-white p-6 rounded-2xl shadow-sm border-2 border-dashed border-[#8bd3fe]';
                 
-                let qTitle = document.createElement('div');
-                qTitle.className = 'text-lg font-bold text-blue-900 dark:text-blue-300 mb-4';
-                qTitle.innerHTML = `<span class="${isHard ? 'text-red-500' : 'text-green-500'}">Câu ${index + 1} ${isHard ? '(Khó)' : '(Dễ)'}:</span> ${qObj.q}`;
-                qDiv.appendChild(qTitle);
+                qDiv.innerHTML = `<div class="font-black text-[var(--pt-blue)] mb-4 text-lg">Câu ${index + 1}: <span class="text-gray-700">${qObj.q}</span></div>`;
 
                 let optsDiv = document.createElement('div');
-                optsDiv.className = 'grid grid-cols-1 md:grid-cols-2 gap-4';
+                optsDiv.className = 'grid grid-cols-1 md:grid-cols-2 gap-3';
 
                 qObj.opts.forEach((optText, optIndex) => {
                     let btn = document.createElement('div');
                     btn.className = 'option';
                     btn.innerText = optText;
-                    
                     btn.onclick = function() {
                         let allBtns = optsDiv.querySelectorAll('.option');
                         allBtns.forEach(b => b.classList.add('disabled'));
-
-                        if (optIndex === qObj.ans) {
-                            btn.classList.add('correct'); 
-                        } else {
-                            btn.classList.add('wrong'); 
-                            allBtns[qObj.ans].classList.add('correct');
-                        }
+                        if (optIndex === qObj.ans) btn.classList.add('correct'); 
+                        else { btn.classList.add('wrong'); allBtns[qObj.ans].classList.add('correct'); }
                     };
                     optsDiv.appendChild(btn);
                 });
                 qDiv.appendChild(optsDiv);
                 container.appendChild(qDiv);
             });
+            setTimeout(() => { document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
         }
     </script>
-</body>
-</html>
+
+</body></html>
