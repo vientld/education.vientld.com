@@ -1,0 +1,810 @@
+<html lang="vi"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Nghệ 9 | Lắp Mạch Điện Cầu Thang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&amp;display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pt-blue: #1eb8ff;
+            --pt-light-blue: #7cd9ff;
+            --pt-dark-blue: #0060a8;
+            --pt-yellow: #ffce00;
+            --pt-orange: #ff8c00;
+            --pt-border: #8bd3fe;
+        }
+
+        /* --- BACKGROUND CHUẨN SHOP VNG --- */
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #E6F7FF; /* Màu nền chủ đạo từ web shop */
+            background-image: 
+                /* Lớp vân ngang mờ */
+                linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px),
+                /* Lớp sáng ở giữa */
+                radial-gradient(circle at 50% 30%, rgba(255,255,255,0.8) 0%, rgba(230, 247, 255, 0) 70%);
+            background-size: 20px 20px, 20px 20px, 100% 100%;
+            background-attachment: fixed;
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- HIỆU ỨNG ÁNH SÁNG XẸT (LIGHT STREAKS) NHẸ NHÀNG --- */
+        .light-container {
+            position: absolute; /* Đặt absolute để cuộn theo trang, không cố định che mắt */
+            top: 0; left: 0; right: 0; height: 600px; /* Chỉ giới hạn ở phần đầu trang */
+            pointer-events: none;
+            z-index: 1; /* Nằm dưới nội dung nhưng trên nền */
+            overflow: hidden;
+        }
+
+        /* Vệt sáng lấp lánh (giống the bài hiếm) */
+        .streak {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            transform: skewX(-45deg);
+        }
+
+        .streak-1 {
+            top: 50px; left: -100%; width: 200px; height: 100%;
+            animation: sweep 6s infinite ease-in-out;
+        }
+        .streak-2 {
+            top: -100px; left: -100%; width: 80px; height: 150%;
+            animation: sweep 6s infinite 0.5s ease-in-out;
+            opacity: 0.8;
+        }
+
+        /* Tia laser dọc (Mô phỏng dòng điện nhẹ) */
+        .laser {
+            position: absolute;
+            top: 20%; left: -100%; width: 300px; height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(30, 184, 255, 0.8), #fff, rgba(30, 184, 255, 0.8), transparent);
+            box-shadow: 0 0 10px rgba(30, 184, 255, 0.5);
+            animation: zap 4s infinite 2s linear;
+        }
+
+        @keyframes sweep {
+            0% { left: -50%; }
+            100% { left: 150%; }
+        }
+        @keyframes zap {
+            0% { left: -100%; opacity: 0;}
+            50% { opacity: 1;}
+            100% { left: 150%; opacity: 0;}
+        }
+
+        /* --- UI CHUẨN PLAY TOGETHER --- */
+        .pt-header { background-color: var(--pt-blue); position: relative; z-index: 50;}
+        .pt-nav-link { color: white; font-weight: 800; text-transform: uppercase; font-size: 14px; transition: 0.2s; padding: 5px 10px; border-radius: 20px; }
+        .pt-nav-link:hover { background-color: rgba(255,255,255,0.2); }
+        .pt-btn-orange { background-color: var(--pt-orange); color: white; border-radius: 30px; font-weight: 800; padding: 6px 20px; box-shadow: 0 4px 0 #d97700; transition: transform 0.1s; }
+        .pt-btn-orange:active { transform: translateY(4px); box-shadow: 0 0 0 #d97700; }
+        
+        .btn-disabled { background-color: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; cursor: not-allowed; }
+
+        .clouds { background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%23ffffff" fill-opacity="0.6" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,186.7C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') no-repeat bottom; background-size: cover; height: 150px; width: 100%; position: absolute; bottom: 0; left: 0; z-index: 5; pointer-events: none;}
+
+        .pt-container { background: rgba(255,255,255,0.95); backdrop-filter: blur(5px); border: 3px dashed var(--pt-border); border-radius: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; z-index: 10; margin-top: -50px; padding: 40px; }
+        .pt-title { color: var(--pt-blue); font-weight: 900; font-size: 32px; text-transform: uppercase; text-align: center; margin-bottom: 25px; }
+
+        .pt-tabs-wrapper { display: flex; justify-content: center; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .pt-tab-btn { padding: 10px 25px; border: 2.5px solid #8e94e9; border-radius: 30px; background: white; color: #6b72e1; font-weight: 800; font-size: 16px; text-transform: uppercase; cursor: pointer; transition: 0.2s; position: relative; }
+        .pt-tab-btn:hover { background: #f0f1ff; }
+        .pt-tab-btn.active { background-color: var(--pt-yellow); border-color: var(--pt-yellow); color: white; box-shadow: 0 4px 0 #d4a000; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .pt-tab-btn.active::after { content: '👑'; position: absolute; top: -18px; right: -10px; font-size: 24px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); transform: rotate(15deg); }
+        
+        .tab-content { display: none; animation: fadeIn 0.4s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .floating-qr { position: fixed; right: 0; top: 150px; background: var(--pt-blue); border: 3px solid white; border-right: none; border-radius: 20px 0 0 20px; padding: 10px; width: 90px; text-align: center; box-shadow: -5px 5px 15px rgba(0,0,0,0.2); z-index: 100; }
+        .floating-qr img { width: 100%; border-radius: 10px; border: 2px solid red; margin-bottom: 10px; }
+        .qr-btn { background: #182026; color: white; font-size: 10px; font-weight: bold; border-radius: 15px; padding: 5px; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 5px; cursor: pointer; border: 1px solid #333;}
+        .qr-btn:hover { background: #333; }
+        .qr-social { display: flex; justify-content: center; gap: 5px; margin-top: 5px; }
+        .qr-social div { background: #182026; width: 20px; height: 20px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; }
+
+        .pt-news-item { display: flex; align-items: center; padding: 15px 0; border-bottom: 2px dashed #eee; transition: 0.2s; }
+        .pt-news-item:hover { background: #f9f9f9; border-radius: 10px; padding: 15px; }
+        .pt-news-number { font-size: 28px; font-weight: 900; color: #ccc; margin-right: 20px; font-style: italic; }
+        .pt-news-content { flex: 1; }
+        .pt-news-title { font-weight: 800; color: #444; font-size: 18px; }
+        .pt-news-desc { color: #777; font-size: 14px; margin-top: 5px; }
+        .pt-news-btn { background: var(--pt-blue); color: white; font-weight: 800; font-size: 12px; padding: 6px 15px; border-radius: 20px; }
+
+        .option { padding: 15px; background: #f0f8ff; border-radius: 15px; cursor: pointer; border: 3px solid #d0ebff; font-weight: 800; transition: 0.2s; text-align: center; color: #333; }
+        .option:hover { background: #d0ebff; transform: scale(1.02); }
+        .option.correct { background-color: #ff6699 !important; color: white !important; border-color: #ff3366; } 
+        .option.wrong { background-color: #222222 !important; color: white !important; border-color: #000000; } 
+        .option.disabled { pointer-events: none; }
+
+        /* HOẠT ẢNH CÂU CÁ */
+        @keyframes float-bobber {
+            0%, 100% { transform: translate(-50%, 0px) rotate(0deg); }
+            50% { transform: translate(-50%, -6px) rotate(4deg); }
+        }
+        @keyframes dip-bobber {
+            0%, 100% { transform: translate(-50%, 0px); }
+            50% { transform: translate(-50%, 25px); }
+        }
+        .bobber-float { animation: float-bobber 2.5s ease-in-out infinite; }
+        .bobber-dip { animation: dip-bobber 0.4s ease-in-out infinite; }
+        
+        .lake-waves {
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 12px);
+        }
+    </style>
+</head>
+<body onload="initGame()">
+
+    <div class="light-container">
+        <div class="streak streak-1"></div>
+        <div class="streak streak-2"></div>
+        <div class="laser"></div>
+    </div>
+
+    <div id="realTimeClock" class="fixed top-0 left-0 z-[60] bg-[#182026] text-white px-3 py-1 rounded-br-lg font-bold text-[11px] shadow opacity-80 border-b border-r border-[#333]">Đang cập nhật...</div>
+
+    <header class="pt-header sticky top-0 shadow-md">
+        <div class="container mx-auto px-4 h-[60px] flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg class="w-6 h-6 text-white cursor-pointer hover:text-yellow-300" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+            </div>
+            
+            <nav class="hidden md:flex space-x-2 items-center">
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-lythuyet')">LÝ THUYẾT</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-sodo')">SƠ ĐỒ</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-quytrinh')">QUY TRÌNH</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-antoan')">AN TOÀN &amp; LỖI</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-ungdung')">ỨNG DỤNG</a>
+                <a href="#" class="pt-nav-link" onclick="switchTab(event, 'tab-trochoi')">TRÒ CHƠI</a>
+            </nav>
+
+            <button class="pt-btn-orange text-sm uppercase">Đăng nhập</button>
+        </div>
+    </header>
+
+    <section class="relative pt-12 pb-24 px-4 overflow-hidden" style="background-color: var(--pt-light-blue);">
+        <div class="container mx-auto text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-black mb-4 text-white drop-shadow-xl" style="-webkit-text-stroke: 2px #0060a8;">
+                LẮP MẠCH ĐIỆN CẦU THANG
+            </h1>
+        </div>
+        <div class="clouds"></div>
+    </section>
+
+    <main class="container mx-auto px-4 pb-20 relative z-10">
+        <div class="pt-container max-w-6xl mx-auto">
+            
+            <h2 class="pt-title">- NỘI DUNG -</h2>
+
+            <div class="pt-tabs-wrapper">
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-lythuyet')">Lý Thuyết</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-sodo')">Sơ Đồ</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-quytrinh')">Quy Trình</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-antoan')">An Toàn &amp; Lỗi</button>
+                <button class="pt-tab-btn" onclick="switchTab(event, 'tab-ungdung')">Ứng Dụng</button>
+                <button class="pt-tab-btn active" onclick="switchTab(event, 'tab-trochoi')">Trò Chơi</button>
+            </div>
+
+            <div id="tab-lythuyet" class="tab-content">
+                <div class="bg-[#f0f9ff] rounded-2xl p-6 border-2 border-blue-200 mb-6">
+                    <h3 class="text-xl font-black text-[#0060a8] mb-2 uppercase">1. Dụng cụ, Vật liệu và Thiết bị</h3>
+                    <p class="text-gray-700 font-semibold mb-4">Để thực hiện bài thực hành này, chúngta cần chuẩn bị đầy đủ các "vật phẩm" sau:</p>
+                    <ul class="list-disc pl-6 space-y-2 text-gray-700 font-bold mb-6">
+                        <li><span class="text-[#ff4757]">Thiết bị:</span> 1 Cầu chì, 2 Công tắc 3 cực, 1 Bóng đèn sợi đốt (hoặc LED).</li>
+                        <li><span class="text-[#1dd1a1]">Vật liệu:</span> Bảng điện, dây dẫn điện, băng keo cách điện.</li>
+                        <li><span class="text-[#f39c12]">Dụng cụ:</span> Kìm tuốt dây, tua vít, bút thử điện, khoan tay (nếu cần).</li>
+                    </ul>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                    <div class="bg-[#ff6b6b] rounded-2xl p-4 text-center text-white shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#c0392b]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        <h4 class="font-black text-lg">KÌM ĐIỆN</h4>
+                        <p class="text-xs">Dụng cụ cắt, tuốt</p>
+                    </div>
+                    <div class="bg-[#1dd1a1] rounded-2xl p-4 text-center text-white shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#10ac84]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        <h4 class="font-black text-lg">TUA VÍT</h4>
+                        <p class="text-xs">Siết ốc, vặn chốt</p>
+                    </div>
+                    <div class="bg-[#feca57] rounded-2xl p-4 text-center text-[#d35400] shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#f39c12]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-[#d35400]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="3" stroke-width="2"></rect><rect x="9" y="8" width="6" height="8" rx="1" fill="currentColor"></rect><circle cx="12" cy="5" r="1.5" fill="currentColor"></circle><circle cx="8" cy="19" r="1.5" fill="currentColor"></circle><circle cx="16" cy="19" r="1.5" fill="currentColor"></circle></svg>
+                        <h4 class="font-black text-lg">2 CT 3 CỰC</h4>
+                        <p class="text-xs">Chuyển mạch</p>
+                    </div>
+                    <div class="bg-[#54a0ff] rounded-2xl p-4 text-center text-white shadow-md transform hover:scale-105 transition cursor-pointer border-b-4 border-[#2e86de]">
+                        <svg class="w-12 h-12 mx-auto mb-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 2v1m-4.24 1.76l-.71-.71M20.95 12h-1M4.05 12h-1M16.24 4.76l.71-.71M12 18V9m0 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M8 15h8v3H8z"></path></svg>
+                        <h4 class="font-black text-lg">ĐÈN &amp; ĐUÔI</h4>
+                        <p class="text-xs">Thiết bị tiêu thụ</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-sodo" class="tab-content">
+                <div class="bg-[#f0f9ff] rounded-2xl p-6 border-2 border-blue-200">
+                    <div class="text-center mb-6">
+                        <span class="bg-yellow-400 text-blue-900 font-black px-5 py-1 rounded-full text-sm uppercase">2. Sơ đồ Nguyên lý &amp; Lắp đặt</span>
+                    </div>
+                    
+                    <div class="mb-6 font-bold text-gray-700">
+                        <p class="mb-2"><span class="text-[var(--pt-blue)]">Điểm khác biệt lớn nhất</span> của công tắc 3 cực so với công tắc 2 cực là nó có 1 cực chung (tĩnh) và 2 cực động.</p>
+                        <p><strong>Nguyên lý hoạt động:</strong> Mạch điện vận hành dựa trên sự phối hợp giữa hai công tắc:</p>
+                        <ul class="list-disc pl-6 mt-2 space-y-1 text-sm">
+                            <li>Khi cả hai công tắc cùng ở vị trí tiếp điểm 1 (hoặc cùng vị trí 2): Mạch kín, đèn sáng.</li>
+                            <li>Khi hai công tắc ở hai vị trí khác nhau (một cái vị trí 1, một cái vị trí 2): Mạch hở, đèn tắt.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white rounded-xl flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden p-4 mb-6 shadow-sm">
+                        <svg viewBox="0 0 700 250" class="w-full h-auto max-w-lg" xmlns="http://www.w3.org/2000/svg">
+                           </svg><img src="https://img.notionusercontent.com/s3/prod-files-secure%2Ffe8aaa7b-9cf6-81aa-b67f-0003cc54743f%2Fedb58e8b-fdc3-4120-9943-477ce269c9f6%2Fimage.png/size/w=2000?exp=1773124657&amp;sig=-yCZFQBPrQMIsSzXQuLrna04LNYDp4jWddvSlEwiB54&amp;id=31eaaa7b-9cf6-8005-88bd-f7bd85328212&amp;table=block&amp;userId=242d872b-594c-81d7-abe8-00023d83d37e">
+                        
+                    </div>
+
+                    <div class="bg-white p-4 rounded-xl shadow-inner mt-6">
+                        <h4 class="font-black text-[#ff8c00] mb-3">Phân tích chi tiết Sơ đồ đấu dây:</h4>
+                        <ul class="space-y-3 font-semibold text-gray-700">
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-red-500 text-white flex justify-center items-center flex-shrink-0 shadow">L</div> <strong>Dây Pha (L):</strong> Đi từ nguồn qua Cầu chì → Vào cực chung của Công tắc 1.</li>
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-yellow-500 text-white flex justify-center items-center flex-shrink-0 shadow">~</div> <strong>Dây nối (Dây chuyển đổi):</strong> 2 cực bìa của Công tắc 1 nối tương ứng với 2 cực bìa của Công tắc 2.</li>
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-green-500 text-white flex justify-center items-center flex-shrink-0 shadow">💡</div> <strong>Dây đèn:</strong> Cực chung của Công tắc 2 nối vào 1 đầu của Đuôi đèn.</li>
+                            <li class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-blue-500 text-white flex justify-center items-center flex-shrink-0 shadow">N</div> <strong>Dây Trung tính (N):</strong> Nối trực tiếp từ nguồn vào đầu còn lại của Đuôi đèn.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-quytrinh" class="tab-content">
+                <h3 class="text-2xl font-black text-center text-[#0060a8] mb-6 uppercase">3. Quy trình lắp đặt (5 Bước)</h3>
+                <div class="pt-news-item">
+                    <div class="pt-news-number">01</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title">Vạch dấu</div>
+                        <div class="pt-news-desc">Xác định vị trí các thiết bị trên bảng điện. Yêu cầu: Chính xác, cân đối.</div>
+                    </div>
+                    <button class="pt-news-btn">Quan trọng</button>
+                </div>
+                <div class="pt-news-item">
+                    <div class="pt-news-number">02</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title">Khoan lỗ</div>
+                        <div class="pt-news-desc">Khoan lỗ bắt vít và lỗ luồn dây. Yêu cầu: Lỗ khoan thẳng, không nứt bảng.</div>
+                    </div>
+                </div>
+                <div class="pt-news-item">
+                    <div class="pt-news-number">03</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title">Lắp thiết bị</div>
+                        <div class="pt-news-desc">Gắn cầu chì, công tắc vào bảng điện. Yêu cầu: Chắc chắn, đúng vị trí.</div>
+                    </div>
+                </div>
+                <div class="pt-news-item">
+                    <div class="pt-news-number text-red-400">04</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title text-red-500">Nối dây mạch điện (Đi dây)</div>
+                        <div class="pt-news-desc font-bold text-gray-800">Nối dây theo sơ đồ lắp đặt. Mối nối phải an toàn, đúng kỹ thuật.</div>
+                    </div>
+                    <button class="pt-news-btn" style="background: #e74c3c;">Thực hành ngay</button>
+                </div>
+                <div class="pt-news-item border-none">
+                    <div class="pt-news-number text-green-400">05</div>
+                    <div class="pt-news-content">
+                        <div class="pt-news-title text-green-500">Kiểm tra</div>
+                        <div class="pt-news-desc font-bold text-gray-800">Nối nguồn và vận hành thử. Yêu cầu: Đèn sáng/tắt đúng yêu cầu.</div>
+                    </div>
+                    <button class="pt-news-btn" style="background: #2ecc71;">Hoàn thành</button>
+                </div>
+            </div>
+
+            <div id="tab-antoan" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-red-50 p-6 rounded-2xl border-2 border-red-200">
+                        <h3 class="text-xl font-black text-red-600 mb-4 uppercase">Quy tắc An toàn Điện (Bắt buộc)</h3>
+                        <ul class="list-disc pl-5 space-y-3 font-bold text-gray-700">
+                            <li><strong>An toàn là trên hết:</strong> Luôn ngắt nguồn điện trước khi đấu nối và dùng bút thử điện kiểm tra lại.</li>
+                            <li><strong>Phân biệt cực:</strong> Phải xác định đúng cực chung của công tắc 3 cực. Nối nhầm cực chung mạch sẽ bị chập.</li>
+                            <li><strong>Màu dây:</strong> Nên dùng dây màu <span class="text-red-500">đỏ</span> cho dây pha (L) và màu <span class="text-blue-500">xanh/đen</span> cho dây trung tính (N).</li>
+                            <li><strong>Vỏ cách điện:</strong> Đảm bảo các mối nối được quấn băng keo cách điện kín.</li>
+                            <li><strong>Kiểm tra cuối:</strong> Luôn dùng đồng hồ vạn năng hoặc bút thử điện kiểm tra thông mạch.</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-yellow-50 p-6 rounded-2xl border-2 border-yellow-200">
+                        <h3 class="text-xl font-black text-yellow-600 mb-4 uppercase">Các lỗi thường gặp</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left text-gray-700 bg-white rounded-lg shadow-sm">
+                                <thead class="text-xs text-white uppercase bg-yellow-500">
+                                    <tr>
+                                        <th scope="col" class="px-4 py-3 rounded-tl-lg">Hiện tượng</th>
+                                        <th scope="col" class="px-4 py-3">Nguyên nhân &amp; Cách khắc phục</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="px-4 py-3 font-bold">Đèn không sáng</td>
+                                        <td class="px-4 py-3">Cầu chì đứt, bóng cháy hoặc lỏng mối nối → <em>Kiểm tra cầu chì, thay bóng, siết ốc.</em></td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="px-4 py-3 font-bold">Chỉ 1 CT điều khiển được</td>
+                                        <td class="px-4 py-3">Nối nhầm cực chung với cực động → <em>Xác định lại cực chung và đấu lại.</em></td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="px-4 py-3 font-bold">Nghe tiếng nổ/chập</td>
+                                        <td class="px-4 py-3">Dây pha và trung tính chạm nhau → <em>Ngắt điện NGAY, kiểm tra đầu dây.</em></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-4 py-3 font-bold rounded-bl-lg">Đèn nhấp nháy khi tắt</td>
+                                        <td class="px-4 py-3 rounded-br-lg">Đấu nhầm dây trung tính vào CT → <em>Đảo lại vị trí dây nguồn.</em></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-ungdung" class="tab-content">
+                <div class="bg-gradient-to-r from-blue-100 to-green-100 rounded-2xl p-8 text-center border-2 border-blue-200 shadow-md">
+                    <h3 class="text-3xl font-black text-[#0060a8] mb-6 uppercase">Ứng dụng mở rộng trong thực tế</h3>
+                    <p class="text-lg font-bold text-gray-700 mb-8 max-w-2xl mx-auto">
+                        Mạch này không chỉ dùng cho cầu thang mà còn được gọi là <strong>mạch điều khiển hai nơi</strong>. 
+                        Bạn có thể bắt gặp nó ở rất nhiều không gian kiến trúc khác nhau!
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-xl shadow border-b-4 border-blue-400 hover:-translate-y-2 transition-transform">
+                            <div class="text-4xl mb-3">🛏️</div>
+                            <h4 class="font-black text-xl text-blue-800 mb-2">Phòng Ngủ</h4>
+                            <p class="text-sm text-gray-600 font-semibold">Một công tắc ở cửa ra vào, một công tắc ở đầu giường để tắt đèn không cần ngồi dậy.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow border-b-4 border-green-400 hover:-translate-y-2 transition-transform">
+                            <div class="text-4xl mb-3">🏢</div>
+                            <h4 class="font-black text-xl text-green-800 mb-2">Hành Lang Dài</h4>
+                            <p class="text-sm text-gray-600 font-semibold">Bật đèn ở đầu hành lang và tắt đèn khi đã đi tới cuối hành lang, cực kỳ tiện lợi.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl shadow border-b-4 border-orange-400 hover:-translate-y-2 transition-transform">
+                            <div class="text-4xl mb-3">🏭</div>
+                            <h4 class="font-black text-xl text-orange-800 mb-2">Nhà Kho</h4>
+                            <p class="text-sm text-gray-600 font-semibold">Áp dụng cho các nhà kho có hai cửa ra vào đối diện nhau dễ thao tác ánh sáng.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-trochoi" class="tab-content active">
+                <div class="text-center bg-[#fdf5e6] rounded-2xl p-6 border-2 border-[#ffeaa7]">
+                    
+                    <h3 class="text-2xl font-black text-[#d35400] mb-2 uppercase">Câu Cá Nhân Phẩm 🎣</h3>
+                    <p class="font-bold text-gray-600 mb-6">Ai sẽ là người may mắn cắn câu hôm nay?</p>
+                    
+                    <div class="relative w-full max-w-sm h-64 mx-auto border-8 border-blue-400 rounded-3xl overflow-hidden bg-gradient-to-b from-blue-200 to-blue-400 mb-6 shadow-xl" id="lake-container">
+                        <div class="lake-waves absolute bottom-0 w-full h-1/2 bg-blue-600 opacity-70"></div>
+                        
+                        <div id="bobber" class="absolute top-[30%] left-1/2 transform -translate-x-1/2 w-4 h-12 bg-red-500 rounded-full border-2 border-white shadow-lg transition-all duration-300 z-10 hidden">
+                            <div class="w-full h-1/2 bg-white rounded-t-full"></div>
+                        </div>
+            
+                        <div id="fishShadow" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-28 h-14 bg-[#001f3f] rounded-[100%] opacity-0 transition-opacity duration-1000 blur-[3px]"></div>
+            
+                        <div id="tingIcon" class="absolute top-[20%] left-[55%] text-4xl font-black text-red-500 opacity-0 transform -translate-y-4 transition-all duration-300 drop-shadow-md z-20">!</div>
+            
+                        <div id="caughtFish" class="absolute top-[120%] left-1/2 transform -translate-x-1/2 flex flex-col items-center transition-all duration-500 cubic-bezier(0.175, 0.885, 0.32, 1.275) z-30">
+                            <div class="text-6xl drop-shadow-xl" style="transform: scaleX(-1);">🐟</div>
+                            <div class="bg-white px-5 py-2 border-4 border-yellow-400 rounded-xl mt-1 font-black text-xl text-red-600 shadow-xl whitespace-nowrap" id="fishSignName">???</div>
+                        </div>
+                    </div>
+                    
+                    <button id="actionBtn" onclick="actionFishing()" class="mt-4 pt-btn-orange text-xl px-10 py-3 rounded-full uppercase transition-all duration-200" style="box-shadow: 0 6px 0 #d97700;">
+                        🎣 Quăng Cần
+                    </button>
+
+                    <div id="result-modal" class="mt-6 p-4 bg-white border-2 border-yellow-400 rounded-xl hidden">
+                        <h4 class="font-bold text-gray-700">🎉 Chúc mừng bạn:</h4>
+                        <span id="winnerName" class="text-3xl font-black text-red-500 block my-2">???</span>
+                        <button onclick="goToQuiz()" class="bg-[#1eb8ff] text-white font-bold py-2 px-6 rounded-full border-b-4 border-[#0097e6] hover:bg-[#00a8ff] transition">
+                            Vào Thi Trắc Nghiệm &gt;
+                        </button>
+                    </div>
+                </div>
+
+                <div id="quiz-section" class="mt-8 pt-8 border-t-2 border-dashed border-gray-300 hidden">
+                    <h3 class="text-xl font-black text-center text-[var(--pt-blue)] mb-2">Phần thi của: <span id="quizPlayerName" class="text-[var(--pt-orange)]">...</span></h3>
+                    <div id="quizContainer" class="space-y-4 max-w-3xl mx-auto mt-6"></div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div class="floating-qr hidden lg:block">
+        <div class="bg-white p-1 rounded mb-2">
+            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMCAYAAACuwEE+AAAIiUlEQVR4Aeyc0XLcxg5E9+T///leb5RKiEN5YOyQWi4HrlBmE0AD09NVUF781//6TytQUOCvR/9pBQoKtGEKYnXq49GGaReUFNgZBnjAzz2lab9Jhtqs31CET1Djg1p+aPYLQKz/9Wn4H8R8OBd7mJ1hnNC4Fdgq0IbZqtHvqQIfY5j0JJ3wIwqkhvn1v+iPI5/qqWC8o83nWR2HGp/rzW+c5WdxiPM539j9Z7H5jVPDuKDx2gq0Yda+//Lp2zBlydYuKBsG4o6FMa7KC5GvupMh1ru/+RzPMIz5XQ8xHyJ2/tHzQewHEbt/hsuGyQg7fm8F2jBH3+/N+dowN7/go4/3cYaB2g727wQwV2++7EKq+VCbL+t/dPzjDHO0AM1XU6ANU9Nr+ew2zPIWqAnw8YaBuPOz3xlm4xD7We4qP0S+rN79fhp/vGF+WrD79HvtJG2Y13RbtqoNs+zVv3bwsmG8YzP82lj/VUHc8f9Fvt7cH2I+RPxV9fufEPMh4t9XfkUg5sMYZ/N/sf75T/Nl+M+ZvzLLhvkq65+rKtCGWfXmXzx3G+ZF4VYtSw0D4x0MtXhVaO/g2XqI82b8WTybZ7Y+44d4HpjDWb/UMBlBPd4Vn6xAG+aTb+8Ns7dh3iD6J7fcGcY792yciQdxJ2f51ThEfp+3yud6GPPDOO7+5j8bu//OME5o3ApsFWjDbNXo91SBNkwqUSdsFdgZBuJO3SY/3yHGYQ4/ObePd/I29so7xPkyDvg3/9t/J6da7/NA5M/4HIdYD3PY/BneGSYr6PjaCrRh1r7/8unbMGXJ1i5IDQNxR1ou72jjLN9xiP3MZ+x6x6s443Mc4ryOG3sex2fxLD+Mz5MaZvYAXX8vBdow97rP00/Thjld4vMb/GSH1DDeicYw3nk+DMR8iLiaD+N68xlDrPf5nG/sfGPnw7gfxDhEbH5jGOdX53F+ahgXNF5bgTbM2vdfPn0bpizZ2gU/bhjvXGNfRzUOcY7D+KOtlyz+eY7GkOcvzovxHrPZ75q3PkQ+0HEWX42j+unDWPCxjMKXL+2DXP9O7rUhG2YS13H9YfZGQbiDoSIfSSI8WwnQsw3XxXDmM/zGLuf4xD5Hc/qs3zXQ+zneJXP+cbmh3H/nWFM0LgV2CrQhtmq0e+pAm2YVKJO2CqQGsY7D8Y7DmLc9cbbYb57h8gHEZvPGGL+dz2232CcD3Pxba/nO0Q+z//M2T4Q87ex57vrIeZDxM+ayvOPYSolnbuyAm2YlW//hbO3YV4QbeWSacN4ZxpD3JkQsfMzfPRlQZwn48/mcxwiP0Ts/Kx/FocaP9Typw2THaDj91KgDXOv+zz9NG2Y0yW+V4PUMDDecRDjlsc72tj5xhD4H9X6jM/xDEOcx/kwjjs/w2eft8qfGiY7UMfXUqANs9Z9T5+2DTMt4VoEhxsGxjsczo37+qo7OqvP+BzPsPtB1AciNp/rM+x6iPxZ/eGGyRp2/LMVaMN89v39+PRtmJMkvyvt4YbxjrRwjkPcoY4bm88YIh9EnPE5DrEeInb/KobI5/7mg3F+Vm8+50Pkd/7hhnGDxvdSoA1zr/s8/TRtmNMlvleD1DDecT6+4xB3IIyx680Psb4aNz/U+Fzv/sYwxw/jes8DMR8idn42b5afGsYNGq+tQBtm7ft/PIrnb8MUBVs9/XDDeAdmGOLOhYh9QRmf41n9bBzivO4P43jWv8rnfPPDeB6Icdcfbhg3aHwvBdow97rP00/Thjld4ns1ONwwEHcgjPGsnDDmhxiv9oNxvX9ngJifxSHmwxh7fqjlex7zZfHDDeMBGt9LgfcZ5l46LnOaNswyV33MQXeGyXZY1tb1VZzxQ9zZWb77Q6yfjUPkq87j/q53PMOuN4Y4L4yx63eGcULjVmCrQBtmq0a/pwq0YVKJOmGrwM4wMN5pcGx8O8zzPdvRjj9rRg/EeZ0L47jzjWfngVp/qOV73gxn59kZJiNcL94n3irQhtmq0e+pAm2YVKJO2CqQGsY7bRZvm3/3DnFHQ8Tf1Yy+VecdcT1j5nt+2z6Ow9z8W+7nu/mf30YPHNs/NcxomI6tp0AbZr07nzpxG2ZKvvWKy4aBuBNhjGcl9c6G2M9x94OY77hxlQ/G/BlfFofID7/FD8DH2WH3M94V6EPZMKpvuJgCbZjFLnz2uG2YWQUXq7+8YYC/dzN8/Z3dT3Unwxcv/NnfGT+MeVwPMb96PvNl9Y5D7A8RO//yhvHAjd+rQBvmvfp/XPc2zMdd2XsHPsIwp56guqNhvIM9rPmNnW/s/AxDnC/LdxxiPUTsfOPq/M6/vGE8cOP3KtCGea/+H9e9DfNxV/begcuG8U7McPV45nN9Fp/Nh/HvBOY3hlgPETs/wxDrfX5jiPkwxll/x8uGMUHjtRRow6x139OnXcow02o1wSM1DIx3INTimeYQ+ZwPMQ4RV3e6+Y+uN5/7QZwfIq7WZ/mOQ+zn+YxTw7ig8doKtGHWvv/y6dswZcnWLtgZxjvubGz53S+LH50/28/1xp43w643dv3RcfPtDOOExq3AVoE2zFaNq7xfeI42zIUv54qj/R8AAP//xSU9MQAAAAZJREFUAwDs3Q/Z1w1FMgAAAABJRU5ErkJggg==" alt="QR Code">
+        </div>
+        <div class="w-full bg-red-500 text-white font-black text-[10px] py-1 mb-2">TÀI LIỆU</div>
+        <div class="qr-btn"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M14.59 13.59L12 16.17L9.41 13.59L8 15l4 4l4-4l-1.41-1.41zM12 4c-4.41 0-8 3.59-8 8s3.59 8 8 8s8-3.59 8-8s-3.59-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6s6 2.69 6 6s-2.69 6-6 6z"></path></svg> PPTX</div>
+        <div class="qr-btn"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"></path></svg> PDF</div>
+        <div class="qr-social">
+            <div><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"></path></svg></div>
+            <div><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M10 15l5.19-3L10 9v6m11.56-7.83c.13.47.22 1.1.28 1.9.07.8.1 1.49.1 2.09L22 12c0 2.19-.16 3.8-.44 4.83-.25.9-.83 1.48-1.73 1.73-.47.13-1.33.22-2.65.28-1.3.07-2.49.1-3.59.1L12 19c-4.19 0-6.8-.16-7.83-.44-.9-.25-1.48-.83-1.73-1.73-.13-.47-.22-1.1-.28-1.9-.07-.8-.1-1.49-.1-2.09L2 12c0-2.19.16-3.8.44-4.83.25-.9.83-1.48 1.73-1.73.47-.13 1.33-.22 2.65-.28 1.3-.07 2.49-.1 3.59-.1L12 5c4.19 0 6.8.16 7.83.44.9.25 1.48.83 1.73 1.73z"></path></svg></div>
+        </div>
+    </div>
+
+    <footer class="bg-[var(--pt-dark-blue)] text-white pt-8 pb-4 border-t-8 border-[#004f8b] relative z-20">
+        <div class="container mx-auto px-4 flex flex-col items-center">
+            
+            <div class="flex gap-4 mb-4 text-xl font-black text-[#ff8c00]">
+                <span>ĐIỀN VIÊN</span>
+                <span class="text-white">|</span>
+                <span class="text-[#00d2ff]">TEAM 2</span>
+            </div>
+            <div class="text-center text-[11px] text-gray-300 font-bold max-w-2xl leading-relaxed">
+                <p>Website hỗ trợ học tập môn Công nghệ 9 - Lắp Mạch Điện Cầu Thang.</p>
+                <p>Designed by Bún Đậu. PTG Styling.</p>
+                <p>Bản quyền tài liệu.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function switchTab(event, tabId) {
+            if(event) event.preventDefault();
+            
+            let btns = document.querySelectorAll('.pt-tab-btn');
+            btns.forEach(btn => btn.classList.remove('active'));
+            
+            let contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            if(event && event.currentTarget.classList.contains('pt-tab-btn')) {
+                event.currentTarget.classList.add('active');
+            } else {
+                document.querySelector(`button[onclick*="${tabId}"]`).classList.add('active');
+            }
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            const dayName = days[now.getDay()];
+            const date = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            document.getElementById('realTimeClock').innerText = `Thứ ${now.getDay()===0?'Nhật':now.getDay()+1}, ${date}/${month}/${year} - ${hours}:${minutes}:${seconds}`;
+        }
+        setInterval(updateClock, 1000);
+
+        // BỘ CÂU HỎI TRẮC NGHIỆM GIỮ NGUYÊN
+        const quizQuestions = [
+            { q: "Mạch điện đèn cầu thang dùng để điều khiển:", opts: ["A. 2 bóng đèn ở 1 nơi.", "B. 1 bóng đèn ở 2 nơi khác nhau.", "C. 1 bóng đèn ở 1 nơi duy nhất.", "D. 2 bóng đèn ở 2 nơi khác nhau."], ans: 1 },
+            { q: "Loại công tắc chuyên dụng trong mạch đèn cầu thang là:", opts: ["A. Công tắc 2 cực.", "B. Công tắc 3 cực.", "C. Công tắc 4 cực.", "D. Công tắc bấm."], ans: 1 },
+            { q: "Công tắc 3 cực có cấu tạo gồm:", opts: ["A. 2 cực tĩnh, 1 cực động.", "B. 1 cực tĩnh, 2 cực động.", "C. 3 cực tĩnh hoàn toàn.", "D. 2 cực động, 2 cực tĩnh."], ans: 0 },
+            { q: "Điểm khác biệt về ngoại hình phía sau của công tắc 3 cực so với công tắc 2 cực là:", opts: ["A. Có 2 vít nối dây.", "B. Có 3 vít nối dây.", "C. Có 4 vít nối dây.", "D. Không có vít nối dây nào."], ans: 1 },
+            { q: "Ký hiệu của công tắc 3 cực trong sơ đồ điện thường là:", opts: ["A. Một vòng tròn có 2 dấu chấm.", "B. Một vòng tròn có 3 dấu chấm (1 cực chung, 2 cực tĩnh).", "C. Một hình chữ nhật gạch chéo.", "D. Một hình vuông có dấu cộng."], ans: 1 },
+            { q: "Trong mạch cầu thang chuẩn, cần sử dụng bao nhiêu công tắc 3 cực cho 1 bóng đèn?", opts: ["A. 1 cái.", "B. 2 cái.", "C. 3 cái.", "D. 4 cái."], ans: 1 },
+            { q: "Thiết bị nào có vai trò bảo vệ mạch điện khi xảy ra sự cố ngắn mạch?", opts: ["A. Công tắc.", "B. Cầu chì hoặc Aptomat.", "C. Đui đèn.", "D. Ống luồn dây."], ans: 1 },
+            { q: "Cực ở giữa của công tắc 3 cực (thường có màu khác) được gọi là:", opts: ["A. Cực tĩnh.", "B. Cực trung gian.", "C. Cực chung (cực động).", "D. Cực tiếp địa."], ans: 2 },
+            { q: "Vỏ công tắc điện thường được làm bằng:", opts: ["A. Nhôm.", "B. Đồng.", "C. Nhựa cách điện hoặc sứ.", "D. Sắt sơn tĩnh điện."], ans: 2 },
+            { q: "Mạch đèn cầu thang còn có tên gọi kỹ thuật khác là:", opts: ["A. Mạch đèn nối tiếp.", "B. Mạch đèn song song.", "C. Mạch đèn hai công tắc ba cực điều khiển một đèn.", "D. Mạch đèn huỳnh quang."], ans: 2 },
+            { q: "Trong sơ đồ nguyên lý, dây pha (L) thường được nối vào:", opts: ["A. Bóng đèn.", "B. Cực chung của công tắc thứ nhất.", "C. Cực tĩnh của công tắc.", "D. Dây trung hòa."], ans: 1 },
+            { q: "Dây trung hòa (N) trong mạch cầu thang thường nối vào:", opts: ["A. Công tắc 1.", "B. Công tắc 2.", "C. Một đầu của bóng đèn.", "D. Cầu chì."], ans: 2 },
+            { q: "Hai dây nối giữa các cực tĩnh của hai công tắc 3 cực gọi là:", opts: ["A. Dây nguồn.", "B. Dây trung gian.", "C. Dây mát.", "D. Dây tiếp địa."], ans: 1 },
+            { q: "Khi hai công tắc 3 cực cùng nối vào một dây trung gian thì đèn sẽ:", opts: ["A. Sáng.", "B. Tắt.", "C. Nhấp nháy.", "D. Bị cháy."], ans: 0 },
+            { q: "Khi một công tắc nối dây trung gian 1, công tắc kia nối dây trung gian 2 thì đèn sẽ:", opts: ["A. Sáng.", "B. Tắt.", "C. Sáng mờ.", "D. Nổ cầu chì."], ans: 1 },
+            { q: "Tại sao cầu chì phải được mắc vào dây pha (L)?", opts: ["A. Để tiết kiệm điện.", "B. Để bảo vệ thiết bị và ngắt điện an toàn khi sự cố.", "C. Để đèn sáng hơn.", "D. Do quy định thẩm mỹ."], ans: 1 },
+            { q: "Sơ đồ lắp đặt mạch điện khác sơ đồ nguyên lý ở chỗ:", opts: ["A. Không có bóng đèn.", "B. Thể hiện vị trí thực tế và cách đi dây của thiết bị.", "C. Chỉ có các đường kẻ thẳng.", "D. Không dùng ký hiệu."], ans: 1 },
+            { q: "Nếu nối dây pha trực tiếp vào bóng đèn thay vì qua công tắc thì:", opts: ["A. Đèn không sáng được.", "B. Đèn sáng bình thường nhưng không an toàn khi sửa chữa.", "C. Công tắc sẽ bị cháy.", "D. Tiết kiệm được dây dẫn."], ans: 1 },
+            { q: "Bảng điện trong mạch đèn cầu thang thường lắp những thiết bị nào?", opts: ["A. Bóng đèn.", "B. Cầu chì và công tắc.", "C. Ổ cắm và bóng đèn.", "D. Chỉ lắp dây dẫn."], ans: 1 },
+            { q: "Để điều khiển 1 đèn ở 3 nơi, ta cần sử dụng thêm loại công tắc nào?", opts: ["A. 3 công tắc 3 cực.", "B. 2 công tắc 3 cực và 1 công tắc 4 cực.", "C. 3 công tắc 2 cực.", "D. 4 công tắc 3 cực."], ans: 1 },
+            { q: "Bước đầu tiên trong quy trình lắp đặt mạch điện là:", opts: ["A. Nối dây.", "B. Vạch dấu.", "C. Khoan lỗ.", "D. Kiểm tra."], ans: 1 },
+            { q: "Khi vạch dấu, người thợ cần xác định:", opts: ["A. Vị trí lắp đặt các thiết bị và đường đi của dây.", "B. Giá tiền của dây điện.", "C. Độ sáng của đèn.", "D. Tốc độ của dòng điện."], ans: 0 },
+            { q: "Công dụng của việc luồn dây điện vào ống PVC là:", opts: ["A. Làm dây dẫn điện tốt hơn.", "B. Bảo vệ dây khỏi tác động môi trường và chống cháy.", "C. Để dây không bị rối.", "D. Để tăng điện áp."], ans: 1 },
+            { q: "Yêu cầu của mối nối dây dẫn là:", opts: ["A. Dẫn điện tốt, bền chắc, an toàn và thẩm mỹ.", "B. Chỉ cần dẫn điện tốt.", "C. Càng lỏng càng tốt.", "D. Không cần băng keo cách điện."], ans: 0 },
+            { q: "Dụng cụ chuyên dụng dùng để tuốt vỏ dây điện là:", opts: ["A. Búa.", "B. Kìm tuốt dây.", "C. Khoan tay.", "D. Tua vít."], ans: 1 },
+            { q: "Để kiểm tra mạch điện sau khi lắp xong (chưa cấp điện), ta dùng:", opts: ["A. Bút thử điện.", "B. Đồng hồ vạn năng (đo thông mạch).", "C. Thước cặp.", "D. Tay không."], ans: 1 },
+            { q: "Khoảng cách lắp bảng điện cách mặt sàn chuẩn thường là:", opts: ["A. 0.5m.", "B. 1.3m đến 1.5m.", "C. 2.5m.", "D. Sát trần nhà."], ans: 1 },
+            { q: "Khi nối dây vào cực công tắc, phần dây đồng trần nên:", opts: ["A. Dài ra ngoài 5cm.", "B. Nằm gọn trong cực và không bị hở quá nhiều.", "C. Được quấn quanh vít nhiều vòng.", "D. Bôi thêm keo dán sắt."], ans: 1 },
+            { q: "Nếu dây dẫn bị hở lõi đồng ở giữa đoạn dây, cách xử lý tốt nhất là:", opts: ["A. Mặc kệ vì không ai chạm vào.", "B. Quấn băng keo cách điện thật kỹ.", "C. Đổ nước vào cho mát.", "D. Cắt bỏ cả sợi dây."], ans: 1 },
+            { q: "Trước khi lắp đặt mạch điện, ta cần chuẩn bị những gì?", opts: ["A. Sơ đồ lắp đặt.", "B. Dụng cụ, vật liệu đầy đủ.", "C. Thiết bị bảo hộ.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Tại sao không được chạm vào lõi dây điện khi mạch đang có điện?", opts: ["A. Vì dây sẽ bị bẩn.", "B. Vì sẽ gây điện giật nguy hiểm đến tính mạng.", "C. Vì dòng điện sẽ bị yếu đi.", "D. Vì dây sẽ bị đứt."], ans: 1 },
+            { q: "Hiện tượng đèn cầu thang không sáng ở cả hai vị trí có thể do:", opts: ["A. Cháy bóng đèn.", "B. Đứt cầu chì.", "C. Lỏng mối nối nguồn.", "D. Tất cả đều đúng."], ans: 3 },
+            { q: "Trong sơ đồ mạch điện đèn cầu thang, dây pha được nối vào thiết bị bảo vệ nào đầu tiên?", opts: ["A. Công tắc.", "B. Cầu chì.", "C. Bóng đèn.", "D. Đui đèn."], ans: 1 },
+            { q: "Ký hiệu của dây pha trong sơ đồ điện là:", opts: ["A. N.", "B. L.", "C. PE.", "D. G."], ans: 1 },
+            { q: "Ký hiệu của dây trung hòa trong sơ đồ điện là:", opts: ["A. L.", "B. N.", "C. A.", "D. K."], ans: 1 },
+            { q: "Khi lắp đặt mạch điện, ta cần vạch dấu vị trí của:", opts: ["A. Thiết bị điện và đường đi dây.", "B. Chỉ vạch dấu bóng đèn.", "C. Chỉ vạch dấu bảng điện.", "D. Không cần vạch dấu."], ans: 0 },
+            { q: "Công tắc 3 cực có bao nhiêu cực tĩnh?", opts: ["A. 1 cực.", "B. 2 cực.", "C. 3 cực.", "D. 4 cực."], ans: 1 },
+            { q: "Trong công tắc 3 cực, cực nào dùng để nối với cực động?", opts: ["A. Cực tĩnh 1.", "B. Cực tĩnh 2.", "C. Cực chung.", "D. Cực tiếp địa."], ans: 2 },
+            { q: "Thiết bị dùng để phát hiện điện rò rỉ ra vỏ máy là:", opts: ["A. Tua vít.", "B. Bút thử điện.", "C. Kìm.", "D. Thước dây."], ans: 1 },
+            { q: "Quy trình lắp đặt mạch điện bảng điện gồm mấy bước chính?", opts: ["A. 3 bước.", "B. 4 bước.", "C. 5 bước.", "D. 6 bước."], ans: 2 },
+            { q: "Bước thứ 2 trong quy trình lắp đặt mạch điện là:", opts: ["A. Vạch dấu.", "B. Khoan lỗ.", "C. Lắp thiết bị.", "D. Kiểm tra."], ans: 1 },
+            { q: "Mạch điện đèn cầu thang dùng để điều khiển 1 bóng đèn tại mấy vị trí?", opts: ["A. 1 vị trí.", "B. 2 vị trí.", "C. 3 vị trí.", "D. Nhiều vị trí."], ans: 1 },
+            { q: "Đặc điểm của công tắc 3 cực so với công tắc 2 cực là:", opts: ["A. Có thêm 1 cực tĩnh.", "B. Có thêm 1 cực động.", "C. Kích thước nhỏ hơn.", "D. Làm bằng sắt."], ans: 0 },
+            { q: "Khi lắp đặt mạch điện, yêu cầu về mối nối là:", opts: ["A. Chắc chắn và thẩm mỹ.", "B. Dẫn điện tốt.", "C. An toàn điện.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Để uốn ống nhựa PVC khi lắp mạch điện đi nổi, ta dùng:", opts: ["A. Kìm điện.", "B. Lò xo uốn ống.", "C. Tua vít.", "D. Búa."], ans: 1 },
+            { q: "Sơ đồ nguyên lý khác sơ đồ lắp đặt ở điểm nào?", opts: ["A. Không thể hiện vị trí lắp đặt thực tế.", "B. Không có bóng đèn.", "C. Không dùng ký hiệu.", "D. Thể hiện rõ cách đi dây trong tường."], ans: 0 },
+            { q: "Trong mạch đèn cầu thang, 2 dây nối giữa 2 công tắc 3 cực gọi là:", opts: ["A. Dây nguồn.", "B. Dây trung gian.", "C. Dây pha.", "D. Dây trung hòa."], ans: 1 },
+            { q: "Dụng cụ dùng để tuốt vỏ dây điện là:", opts: ["A. Kìm tuốt dây.", "B. Khoan.", "C. Búa.", "D. Cưa tay."], ans: 0 },
+            { q: "Trước khi kiểm tra mạch điện bằng cách cấp nguồn, ta cần:", opts: ["A. Kiểm tra thông mạch bằng đồng hồ.", "B. Rửa tay sạch.", "C. Thay bóng đèn mới.", "D. Lau bảng điện."], ans: 0 },
+            { q: "Bảng điện thường được làm bằng vật liệu gì?", opts: ["A. Nhôm.", "B. Sắt.", "C. Gỗ hoặc nhựa cách điện.", "D. Đồng."], ans: 2 },
+            { q: "Mạch đèn cầu thang thuộc loại mạch điện:", opts: ["A. Đóng ngắt đơn giản.", "B. Mạch đổi chiều.", "C. Mạch song song.", "D. Mạch nối tiếp."], ans: 1 },
+            { q: "Đường kính lỗ khoan bảng điện phụ thuộc vào:", opts: ["A. Độ dày của bảng.", "B. Tiết diện dây dẫn.", "C. Màu sắc của dây.", "D. Chiều dài dây."], ans: 1 },
+            { q: "Khi nối dây dẫn điện vào đui đèn, ta cần:", opts: ["A. Tuốt vỏ một đoạn ngắn vừa đủ.", "B. Để lõi đồng hở thật dài.", "C. Không cần vặn vít.", "D. Dán keo dán sắt."], ans: 0 },
+            { q: "Vị trí lắp đặt cầu chì thường nằm ở đâu trên bảng điện?", opts: ["A. Sau công tắc.", "B. Trước các thiết bị khác trên dây pha.", "C. Trên dây trung hòa.", "D. Sát cạnh bóng đèn."], ans: 1 },
+            { q: "Màu dây pha quy định phổ biến là màu:", opts: ["A. Xanh dương.", "B. Đỏ.", "C. Vàng xanh.", "D. Trắng."], ans: 1 },
+            { q: "Dây trung hòa (dây nguội) thường có màu:", opts: ["A. Đỏ.", "B. Đen hoặc xanh dương.", "C. Vàng.", "D. Cam."], ans: 1 },
+            { q: "Tại sao phải luồn dây điện vào ống bảo vệ?", opts: ["A. Tránh tác động môi trường và đảm bảo an toàn.", "B. Để dây dẫn điện nhanh hơn.", "C. Để trang trí cho đẹp.", "D. Để dây không bị nóng."], ans: 0 },
+            { q: "Khoảng cách an toàn của bảng điện so với mặt sàn thường là:", opts: ["A. 0.5m.", "B. 1.3 - 1.5m.", "C. 2.5m.", "D. 3m."], ans: 1 },
+            { q: "Ống nhựa PVC dùng trong lắp đặt điện có ưu điểm:", opts: ["A. Cách điện tốt.", "B. Chống ẩm mốc.", "C. Nhẹ, dễ thi công.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Khi lắp mạch cầu thang, nếu đảo vị trí dây pha và dây trung hòa cho nhau thì:", opts: ["A. Đèn không sáng.", "B. Đèn vẫn sáng nhưng không an toàn khi tắt công tắc.", "C. Cháy cầu chì.", "D. Hỏng công tắc."], ans: 1 },
+            { q: "Dụng cụ dùng để vặn ốc vít cố định thiết bị là:", opts: ["A. Tua vít.", "B. Kìm.", "C. Búa.", "&D. Kéo."], ans: 0 },
+            { q: "Bước cuối cùng trong quy trình lắp đặt mạch điện là:", opts: ["A. Nối dây.", "B. Vạch dấu.", "C. Kiểm tra và vận hành.", "D. Lắp thiết bị."], ans: 2 },
+            { q: "Tại sao không được lắp cầu chì vào dây trung hòa?", opts: ["A. Vì dây trung hòa không có điện.", "B. Vì khi cầu chì đứt, mạch vẫn còn điện áp pha gây nguy hiểm.", "C. Vì tốn dây.", "D. Vì cầu chì sẽ không đứt."], ans: 1 },
+            { q: "Trong mạch cầu thang, cực chung của công tắc 3 cực thứ hai nối đi đâu?", opts: ["A. Nối vào dây pha.", "B. Nối vào bóng đèn.", "C. Nối vào dây trung hòa.", "D. Nối vào cầu chì."], ans: 1 },
+            { q: "Mạch điện cầu thang có thể tắt/mở đèn từ:", opts: ["A. Tầng 1.", "B. Tầng 2.", "C. Cả tầng 1 và tầng 2.", "D. Chỉ một nơi cố định."], ans: 2 },
+            { q: "Yêu cầu của bản vẽ sơ đồ lắp đặt là:", opts: ["A. Chính xác về vị trí thiết bị.", "B. Thể hiện rõ đường đi của dây.", "C. Dễ hiểu, đúng ký hiệu.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Vật liệu cách điện được dùng để làm:", opts: ["A. Lõi dây điện.", "B. Vỏ dây điện và vỏ thiết bị.", "C. Tiếp điểm công tắc.", "D. Sợi chì trong cầu chì."], ans: 1 },
+            { q: "Để đảm bảo an toàn khi khoan, người thợ cần đeo:", opts: ["A. Kính bảo hộ.", "B. Đồng hồ.", "C. Nhẫn.", "D. Khăn quàng."], ans: 0 },
+            { q: "Nếu dùng dây dẫn có tiết diện quá nhỏ so với phụ tải thì:", opts: ["A. Dây sẽ bị nóng và dễ gây cháy.", "B. Tiết kiệm chi phí.", "C. Đèn sẽ sáng hơn.", "D. Không ảnh hưởng gì."], ans: 0 },
+            { q: "Mối nối dây dẫn bằng cách vặn xoắn thường áp dụng cho:", opts: ["A. Dây lõi một sợi.", "B. Dây lõi nhiều sợi.", "C. Dây cáp lớn.", "D. Cả A và B."], ans: 3 },
+            { q: "Trong mạch điện, thiết bị dùng để đóng/cắt mạch điện thủ công là:", opts: ["A. Cầu chì.", "B. Công tắc.", "C. Bóng đèn.", "D. Ổ cắm."], ans: 1 },
+            { q: "Ký hiệu hình tròn có gạch chéo (X) bên trong đại diện cho:", opts: ["A. Công tắc.", "B. Cầu chì.", "C. Đèn sợi đốt.", "D. Chuông."], ans: 2 },
+            { q: "Công tắc 3 cực có cấu tạo bên ngoài tương tự công tắc nào?", opts: ["A. Công tắc 2 cực.", "B. Công tắc bấm.", "C. Công tắc xoay.", "D. Công tắc từ."], ans: 0 },
+            { q: "Khi lắp đặt mạch điện đi nổi, kẹp đỡ ống có tác dụng gì?", opts: ["A. Giữ ống nhựa cố định trên tường.", "B. Cách điện cho ống.", "C. Nối các đoạn ống lại.", "D. Che mối nối dây."], ans: 0 },
+            { q: "Băng keo cách điện được dùng để:", opts: ["A. Dán bảng điện lên tường.", "B. Bọc kín các mối nối dây dẫn điện.", "C. Đánh dấu dây pha.", "D. Thay thế vỏ ống nhựa."], ans: 1 },
+            { q: "Trong mạch cầu thang, hai cực tĩnh của công tắc 1 nối với:", opts: ["A. Hai cực tĩnh của công tắc 2.", "B. Dây pha và dây trung hòa.", "C. Cực chung của công tắc 2.", "D. Hai bóng đèn khác nhau."], ans: 0 },
+            { q: "Dây dẫn điện trong nhà không nên dùng:", opts: ["A. Dây có vỏ bọc.", "B. Dây trần.", "C. Dây lõi đồng.", "D. Dây nhiều sợi."], ans: 1 },
+            { q: "Khi kiểm tra mạch điện, nếu bút thử điện sáng ở vỏ thiết bị thì:", opts: ["A. Thiết bị bình thường.", "B. Thiết bị bị rò điện ra vỏ.", "C. Thiết bị đang hoạt động tốt.", "D. Do đèn bút thử điện bị hỏng."], ans: 1 },
+            { q: "Sơ đồ nguyên lý mạch cầu thang gồm mấy công tắc 3 cực?", opts: ["A. 1.", "B. 2.", "C. 3.", "D. 4."], ans: 1 },
+            { q: "Sơ đồ nguyên lý mạch cầu thang gồm mấy cầu chì bảo vệ cho đèn?", opts: ["A. 1.", "B. 2.", "C. 3.", "D. 0."], ans: 0 },
+            { q: "Để lắp đặt mạch điện đúng kỹ thuật, ta cần chuẩn bị:", opts: ["A. Sơ đồ lắp đặt.", "B. Dụng cụ và vật liệu.", "C. Thiết bị bảo hộ.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Mạch đèn cầu thang thực tế có thể dùng cho:", opts: ["A. Hành lang dài.", "B. Phòng ngủ (bật cửa, tắt ở giường).", "C. Cầu thang tầng.", "D. Tất cả đều đúng."], ans: 3 },
+            { q: "Chức năng của cực động trong công tắc 3 cực là:", opts: ["A. Kết nối luân phiên với 1 trong 2 cực tĩnh.", "B. Luôn luôn nối với cả 2 cực tĩnh.", "C. Ngắt hoàn toàn dòng điện.", "D. Nối đất."], ans: 0 },
+            { q: "Khi khoan lỗ bảng điện, ta cần lưu ý:", opts: ["A. Khoan đúng vị trí vạch dấu.", "B. Khoan càng to càng tốt.", "C. Khoan xuyên qua tường.", "D. Không cần lót bảng."], ans: 0 },
+            { q: "Việc nối dây vào các thiết bị trên bảng điện thực hiện ở bước nào?", opts: ["A. Vạch dấu.", "B. Khoan lỗ.", "C. Lắp thiết bị điện của bảng điện.", "D. Kiểm tra."], ans: 2 },
+            { q: "Nếu mạch cầu thang bật ở tầng 1 nhưng không tắt được ở tầng 2, nguyên nhân là:", opts: ["A. Đấu sai dây trung gian hoặc hỏng công tắc.", "B. Đứt dây nguồn.", "C. Cháy bóng đèn.", "D. Điện áp yếu."], ans: 0 },
+            { q: "Kìm cắt dây điện dùng để:", opts: ["A. Cắt dây dẫn.", "B. Giữ dây dẫn.", "C. Tuốt vỏ dây.", "D. Cả A, B, C."], ans: 3 },
+            { q: "Yêu cầu an toàn khi sử dụng điện là:", opts: ["A. Tay phải khô ráo.", "B. Đi giày cách điện.", "C. Không chạm vào dây trần.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Thiết bị nào bảo vệ mạch điện khi có sự cố quá tải?", opts: ["A. Cầu chì.", "B. Công tắc.", "C. Đui đèn.", "D. Vỏ ống nhựa."], ans: 0 },
+            { q: "Dây dẫn điện trong lắp đặt điện dân dụng thường có lõi bằng:", opts: ["A. Nhôm.", "B. Đồng.", "C. Sắt.", "D. Chì."], ans: 1 },
+            { q: "Ống luồn dây điện giúp bảo vệ dây dẫn khỏi:", opts: ["A. Chuột cắn.", "B. Ẩm ướt.", "C. Va đập cơ học.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Khi vẽ sơ đồ lắp đặt, bảng điện thường được vẽ bằng hình:", opts: ["A. Hình tròn.", "B. Hình chữ nhật.", "C. Hình tam giác.", "D. Đường thẳng."], ans: 1 },
+            { q: "Trong mạch cầu thang, dây trung hòa nối trực tiếp vào:", opts: ["A. Công tắc.", "B. Cầu chì.", "C. Bóng đèn.", "D. Cực chung công tắc 1."], ans: 2 },
+            { q: "Khi thay bóng đèn bị cháy, ta cần làm gì trước tiên?", opts: ["A. Trèo lên thang.", "B. Ngắt nguồn điện (công tắc/cầu dao).", "C. Chuẩn bị bóng mới.", "D. Tháo đui đèn."], ans: 1 },
+            { q: "Dụng cụ nào dùng để xác định đường thẳng và vị trí bằng phẳng khi vạch dấu?", opts: ["A. Thước dây hoặc thước thẳng.", "B. Kìm.", "C. Búa.", "D. Tua vít."], ans: 0 },
+            { q: "Công tắc 3 cực thường có ký hiệu các cực ở mặt sau là:", opts: ["A. 0, 1, 2 (hoặc L, L1, L2).", "B. +, -.", "C. N, L.", "D. A, B, C, D."], ans: 0 },
+            { q: "Cực chung của công tắc 3 cực thứ nhất nối với:", opts: ["A. Dây pha (qua cầu chì).", "B. Bóng đèn.", "C. Dây trung hòa.", "D. Cực chung công tắc 2."], ans: 0 },
+            { q: "Khi nối dây dẫn, nếu không có kìm tuốt dây ta có thể dùng:", opts: ["A. Dao nhỏ hoặc kéo (cẩn thận).", "B. Tay không để xé.", "C. Răng để cắn.", "D. Búa để đập vỏ."], ans: 0 },
+            { q: "Dây dẫn điện đi trong ống nhựa thường là loại:", opts: ["A. Dây đơn có vỏ bọc.", "B. Dây đôi mềm.", "C. Dây cáp ngầm.", "D. Dây nhôm trần."], ans: 0 },
+            { q: "Sơ đồ nguyên lý dùng để:", opts: ["A. Lắp đặt thiết bị.", "B. Nghiên cứu nguyên lý hoạt động của mạch.", "C. Tính toán giá tiền.", "D. Mua vật liệu."], ans: 1 },
+            { q: "Trên bảng điện, cầu chì luôn được lắp:", opts: ["A. Song song với phụ tải.", "B. Nối tiếp với mạch điện cần bảo vệ.", "C. Trên dây trung hòa.", "D. Ở cuối mạch."], ans: 1 },
+            { q: "Khi mạch điện có sự cố chập mạch, cầu chì sẽ:", opts: ["A. Phát sáng.", "B. Nóng chảy và ngắt mạch.", "C. Làm đèn sáng hơn.", "D. Không có hiện tượng gì."], ans: 1 },
+            { q: "Kiểm tra thông mạch là kiểm tra xem:", opts: ["A. Dây có bị đứt hay không.", "B. Đèn có đẹp không.", "C. Công tắc có màu gì.", "D. Ống nhựa có thẳng không."], ans: 0 },
+            { q: "Vạch dấu đường đi dây cần đảm bảo:", opts: ["A. Thẳng hàng, thẩm mỹ.", "B. Ngắn nhất có thể.", "C. Dễ thi công.", "D. Tất cả đều đúng."], ans: 3 },
+            { q: "Trong các thiết bị sau, thiết bị nào là thiết bị tiêu thụ điện?", opts: ["A. Công tắc.", "B. Cầu chì.", "C. Bóng đèn.", "D. Ổ cắm."], ans: 2 },
+            { q: "Để đảm bảo tiếp xúc tốt, lõi dây điện sau khi tuốt cần:", opts: ["A. Làm sạch (đánh bóng).", "B. Bôi mỡ.", "C. Sơn lên.", "D. Để nguyên."], ans: 0 },
+            { q: "Tại sao nên dùng màu dây khác nhau khi lắp mạch cầu thang?", opts: ["A. Cho đẹp.", "B. Để dễ phân biệt dây pha, trung hòa và dây trung gian khi sửa chữa.", "C. Để đèn sáng hơn.", "D. Theo sở thích cá nhân."], ans: 1 },
+            { q: "Khi lắp thiết bị lên bảng điện, cần siết vít:", opts: ["A. Lỏng lẻo.", "B. Vừa đủ chặt để không bị rơi hoặc rung lắc.", "C. Thật mạnh đến khi gãy nhựa.", "D. Không cần vít, dùng keo dính."], ans: 1 },
+            { q: "Thiết bị nào sau đây không có trên bảng điện đèn cầu thang?", opts: ["A. Cầu chì.", "B. Công tắc 3 cực.", "C. Chấn lưu (nếu dùng đèn sợi đốt).", "D. Vít nối dây."], ans: 2 },
+            { q: "Sơ đồ lắp đặt cho biết:", opts: ["A. Vị trí thực tế của bảng điện, bóng đèn.", "B. Cách sắp xếp thiết bị trên bảng điện.", "C. Cách đi dây trong ống luồn.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Khi nối dây vào đui đèn, nếu để các sợi đồng hở chạm nhau sẽ gây:", opts: ["A. Ngắn mạch (chập điện).", "B. Đèn sáng hơn.", "C. Tiết kiệm điện.", "D. Hỏng công tắc."], ans: 0 },
+            { q: "Kìm mỏ nhọn thường dùng để:", opts: ["A. Cắt dây thép.", "B. Uốn, giữ các chi tiết nhỏ trong hốc hẹp.", "C. Đóng đinh.", "D. Khoan lỗ."], ans: 1 },
+            { q: "Mạch điện cầu thang là ứng dụng của:", opts: ["A. Mạch điện một chiều.", "B. Mạch điện xoay chiều.", "C. Mạch điện pin.", "D. Mạch điện năng lượng mặt trời."], ans: 1 },
+            { q: "Trong sơ đồ, ký hiệu đường thẳng liên tục thường biểu thị cho:", opts: ["A. Dây dẫn điện.", "B. Ống nhựa.", "C. Tường nhà.", "D. Thước kẻ."], ans: 0 },
+            { q: "Đui đèn có chức năng:", opts: ["A. Giữ chặt bóng đèn và nối điện cho bóng.", "B. Bảo vệ bóng đèn khỏi vỡ.", "C. Làm bóng đèn sáng hơn.", "D. Thay thế công tắc."], ans: 0 },
+            { q: "Khi lắp đặt xong, ta dùng thiết bị gì để thử điện tại ổ cắm hoặc đui đèn?", opts: ["A. Bút thử điện.", "B. Thước dây.", "C. Búa.", "D. Kìm tuốt dây."], ans: 0 },
+            { q: "Một mạng điện gia đình an toàn cần có thêm dây:", opts: ["A. Dây pha 2.", "B. Dây nối đất (tiếp địa).", "C. Dây thép.", "D. Dây nilon."], ans: 1 },
+            { q: "Dấu hiệu nhận biết công tắc 3 cực khi quan sát mặt trước là:", opts: ["A. Có chữ 'On/Off'.", "B. Có ký hiệu đặc biệt hoặc không khác gì công tắc 2 cực (tùy mẫu).", "C. Có 3 nút nhấn.", "D. Luôn có màu đỏ."], ans: 1 },
+            { q: "Thứ tự đúng của quy trình lắp đặt là:", opts: ["A. Vạch dấu -> Khoan lỗ -> Lắp thiết bị -> Nối dây -> Kiểm tra.", "B. Kiểm tra -> Nối dây -> Lắp thiết bị -> Khoan lỗ -> Vạch dấu.", "C. Nối dây -> Vạch dấu -> Khoan lỗ -> Lắp thiết bị -> Kiểm tra.", "D. Vạch dấu -> Nối dây -> Khoan lỗ -> Lắp thiết bị -> Kiểm tra."], ans: 0 },
+            { q: "Tại sao phải kiểm tra mạch điện khi không có điện trước?", opts: ["A. Để đảm bảo không có lỗi ngắn mạch trước khi cấp điện.", "B. Để tiết kiệm điện.", "C. Cho đúng quy trình.", "D. Vì không có nguồn điện."], ans: 0 },
+            { q: "Khi đi dây trong ống nhựa, ta không nên:", opts: ["A. Luồn quá nhiều dây gây chật chội, khó thoát nhiệt.", "B. Dùng dây có vỏ bọc.", "C. Kẹp ống vào tường.", "D. Dùng ống PVC."], ans: 0 },
+            { q: "Mối nối phân nhánh dùng để:", opts: ["A. Kéo dài dây.", "B. Lấy thêm nguồn điện từ dây chính ra thiết bị mới.", "C. Nối bóng đèn vào đui.", "D. Nối 2 công tắc."], ans: 1 },
+            { q: "Mặt sau công tắc 3 cực có mấy lỗ cắm dây (vít nối dây)?", opts: ["A. 1.", "B. 2.", "C. 3.", "D. 4."], ans: 2 },
+            { q: "Khi lắp đặt mạch điện cầu thang, cần mấy bảng điện?", opts: ["A. 1.", "B. 2.", "C. 3.", "D. 0."], ans: 1 },
+            { q: "Mạch điện cầu thang là mạch điện:", opts: ["A. Cơ bản trong lắp đặt điện dân dụng.", "B. Rất phức tạp.", "C. Không dùng trong nhà.", "D. Chỉ dùng cho công nghiệp."], ans: 0 },
+            { q: "Trong sách Công nghệ 9, yêu cầu về lắp đặt bảng điện là:", opts: ["A. Gọn gàng, chắc chắn.", "B. Đúng sơ đồ.", "C. Đảm bảo an toàn.", "D. Tất cả các ý trên."], ans: 3 },
+            { q: "Ký hiệu cầu chì trong sơ đồ điện là:", opts: ["A. Một hình chữ nhật có đường thẳng xuyên qua.", "B. Một vòng tròn.", "C. Hai gạch song song.", "D. Một dấu cộng."], ans: 0 },
+            { q: "Trong mạch điện đèn cầu thang, nếu 1 công tắc bị hỏng thì:", opts: ["A. Đèn vẫn hoạt động bình thường.", "B. Đèn không thể điều khiển đúng chức năng 2 nơi.", "C. Đèn sẽ nổ.", "D. Cầu chì sẽ đứt."], ans: 1 },
+            { q: "Dụng cụ dùng để vạch dấu chính xác trên bảng điện là:", opts: ["A. Bút chì và thước kẻ.", "B. Kìm.", "C. Tua vít.", "D. Búa."], ans: 0 },
+            { q: "Khi thực hành lắp đặt, an toàn điện được đặt lên:", opts: ["A. Hàng đầu.", "B. Sau khi hoàn thành.", "C. Khi thầy giáo nhắc.", "D. Không quan trọng."], ans: 0 },
+            { q: "Vỏ của các thiết bị điện như công tắc, cầu chì làm bằng nhựa nhằm mục đích:", opts: ["A. Cho nhẹ.", "B. Cách điện, đảm bảo an toàn cho người sử dụng.", "C. Cho rẻ tiền.", "D. Dễ sản xuất."], ans: 1 },
+            { q: "Sau khi hoàn thành bài thực hành lắp mạch đèn cầu thang, ta cần làm gì?", opts: ["A. Về nhà luôn.", "B. Thu dọn dụng cụ, vệ sinh nơi thực hành.", "C. Để nguyên hiện trường.", "D. Vứt rác ra cửa sổ."], ans: 1 },
+            { q: "Nếu chỉ 1 công tắc điều khiển được, công tắc kia không có tác dụng, nguyên nhân thường là:", opts: ["A. Hỏng 1 công tắc hoặc đứt 1 dây trung gian.", "B. Điện áp lưới quá yếu.", "C. Bóng đèn bị già.", "D. Do dùng sai màu dây."], ans: 0 },
+            { q: "Bút thử điện sẽ phát sáng khi ta chạm vào dây nào?", opts: ["A. Dây trung hòa.", "B. Dây pha.", "C. Vỏ nhựa thiết bị.", "D. Dây tiếp địa (nếu không rò điện)."], ans: 1 },
+            { q: "Khi sửa chữa điện trong gia đình, ta bắt buộc phải:", opts: ["A. Ngắt nguồn điện (cầu dao/Aptomat).", "B. Đi ủng hoặc đứng trên vật cách điện.", "C. Có người giám sát.", "D. Tất cả các ý trên."], ans: 3 }
+        ];
+
+        let names = [
+            "Lý Gia An", "N.N. Trâm Anh", "T.T. Phương Anh", "Dương Anh Bảo", 
+            "Võ Quốc Cường", "D.N. Trân Châu", "Huỳnh Quốc Đại", "Vũ Tiến Đạt", 
+            "N.T. Nghi Hân", "Đặng Minh Hoàng", "Trần Gia Huy", "Dương Minh Kim", 
+            "Lý Quốc Khánh", "Huỳnh Phúc Lộc", "Tô Gia Minh", "N.N. Phương Nghi", 
+            "N.T. Khánh Ngọc", "V.Đ. Phương Nguyên", "Đặng Khôi Nguyên", "Nguyễn Trọng Nhân", 
+            "Phạm Quỳnh Như", "Nguyễn Hồng Quang", "Nguyễn Gia Quy", "V.D. Ngọc Quý", 
+            "T.N. Tú Quỳnh", "Trương Nhã Quỳnh", "Lý Hưng Thịnh", "N.T. Kiều Trang", 
+            "V.L. Minh Triết", "Phạm Phú Trọng", "Lê Nhã Uyên", "T.H. Thảo Vy"
+        ];
+        
+        let fishingState = 'idle'; // idle -> waiting -> biting -> caught
+        let biteTimeout;
+        let selectedNameIndex = -1;
+
+        function initGame() {
+            updateClock();
+        }
+
+        // --- HỆ THỐNG ÂM THANH BẰNG WEB AUDIO API (KHÔNG CẦN FILE) ---
+        function playTingSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const audioCtx = new AudioContext();
+                
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // Nốt A5 (Ting)
+                oscillator.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1); // Cao vút lên
+                
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            } catch(e) { console.log("Trình duyệt không hỗ trợ Web Audio API"); }
+        }
+
+        function actionFishing() {
+            if (names.length === 0) {
+                alert("Hồ đã hết cá (Hết người)!");
+                return;
+            }
+
+            let btn = document.getElementById('actionBtn');
+            let bobber = document.getElementById('bobber');
+            let fishShadow = document.getElementById('fishShadow');
+            let caughtFish = document.getElementById('caughtFish');
+            let tingIcon = document.getElementById('tingIcon');
+
+            if (fishingState === 'idle') {
+                // TRẠNG THÁI QUĂNG CẦN CHỜ ĐỢI
+                fishingState = 'waiting';
+                
+                document.getElementById('result-modal').classList.add('hidden');
+                document.getElementById('quiz-section').classList.add('hidden');
+                caughtFish.style.top = '120%'; // Reset cá chìm xuống
+                
+                bobber.classList.remove('hidden');
+                bobber.classList.remove('bobber-dip');
+                bobber.classList.add('bobber-float');
+                
+                fishShadow.style.opacity = '0';
+                
+                btn.innerText = "Đang chờ cá...";
+                btn.classList.add('btn-disabled');
+                
+                // Random thời gian cá cắn từ 5 đến 10 giây
+                let waitTime = Math.floor(Math.random() * 6000) + 2500;
+                biteTimeout = setTimeout(fishBites, waitTime);
+
+            } else if (fishingState === 'biting') {
+                // TRẠNG THÁI GIẬT CÁ
+                catchFish();
+            }
+        }
+
+        function fishBites() {
+            fishingState = 'biting';
+            
+            let btn = document.getElementById('actionBtn');
+            let bobber = document.getElementById('bobber');
+            let fishShadow = document.getElementById('fishShadow');
+            let tingIcon = document.getElementById('tingIcon');
+
+            // Cập nhật giao diện khi cá cắn
+            bobber.classList.remove('bobber-float');
+            bobber.classList.add('bobber-dip'); // Phao chìm nhấp nháy
+            fishShadow.style.opacity = '0.8';   // Bóng cá hiện rõ
+            
+            // Hiệu ứng "Ting!"
+            playTingSound();
+            tingIcon.style.opacity = '1';
+            tingIcon.style.transform = 'translateY(-20px) scale(1.2)';
+            
+            btn.innerText = "GIẬT NGAY!!!";
+            btn.classList.remove('btn-disabled');
+            btn.style.backgroundColor = '#e74c3c'; // Chuyển sang màu đỏ giật gân
+            
+            // Random người trúng
+            selectedNameIndex = Math.floor(Math.random() * names.length);
+            
+            // Ẩn Ting Icon sau 1s
+            setTimeout(() => {
+                tingIcon.style.opacity = '0';
+                tingIcon.style.transform = 'translateY(-4px) scale(1)';
+            }, 1000);
+        }
+
+        function catchFish() {
+            fishingState = 'idle';
+            
+            let btn = document.getElementById('actionBtn');
+            let bobber = document.getElementById('bobber');
+            let fishShadow = document.getElementById('fishShadow');
+            let caughtFish = document.getElementById('caughtFish');
+
+            // Ẩn phao và bóng
+            bobber.classList.add('hidden');
+            bobber.classList.remove('bobber-dip');
+            fishShadow.style.opacity = '0';
+            
+            // Reset nút
+            btn.innerText = "🎣 Quăng Cần";
+            btn.style.backgroundColor = '';
+            
+            let selectedName = names[selectedNameIndex];
+            
+            // Hiệu ứng cá bay lên
+            document.getElementById('fishSignName').innerText = selectedName;
+            caughtFish.style.top = '10%'; 
+            
+            // Hiện Modal Chúc mừng
+            setTimeout(() => {
+                document.getElementById('winnerName').innerText = selectedName;
+                document.getElementById('result-modal').classList.remove('hidden');
+                document.getElementById('result-modal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                // Loại bỏ người đã trúng
+                names.splice(selectedNameIndex, 1);
+            }, 800);
+        }
+
+        function goToQuiz() {
+            let winner = document.getElementById('winnerName').innerText;
+            document.getElementById('quizPlayerName').innerText = winner;
+            document.getElementById('quiz-section').classList.remove('hidden');
+            
+            // XÁO TRỘN CÂU HỎI VÀ LẤY NGẪU NHIÊN 12 CÂU
+            let finalQuestions = [...quizQuestions].sort(() => 1.2 - Math.random()).slice(0, 12);
+            let container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+
+            finalQuestions.forEach((qObj, index) => {
+                let qDiv = document.createElement('div');
+                qDiv.className = 'bg-white p-6 rounded-2xl shadow-sm border-2 border-dashed border-[#8bd3fe]';
+                
+                qDiv.innerHTML = `<div class="font-black text-[var(--pt-blue)] mb-4 text-lg">Câu ${index + 1}: <span class="text-gray-700">${qObj.q}</span></div>`;
+
+                let optsDiv = document.createElement('div');
+                optsDiv.className = 'grid grid-cols-1 md:grid-cols-2 gap-3';
+
+                qObj.opts.forEach((optText, optIndex) => {
+                    let btn = document.createElement('div');
+                    btn.className = 'option';
+                    btn.innerText = optText;
+                    btn.onclick = function() {
+                        let allBtns = optsDiv.querySelectorAll('.option');
+                        allBtns.forEach(b => b.classList.add('disabled'));
+                        if (optIndex === qObj.ans) btn.classList.add('correct'); 
+                        else { btn.classList.add('wrong'); allBtns[qObj.ans].classList.add('correct'); }
+                    };
+                    optsDiv.appendChild(btn);
+                });
+                qDiv.appendChild(optsDiv);
+                container.appendChild(qDiv);
+            });
+            setTimeout(() => { document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+        }
+    </script>
+
+</body></html>
+
